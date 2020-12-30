@@ -136,6 +136,7 @@ Audapter::Audapter() :
 	params.addBoolParam("bdownsampfilt", "Down-sampling filter switch");
 	params.addBoolParam("mute", "Global mute switch");
 	params.addBoolParam("bpvocmpnorm", "Phase vocoder amplitude normalization switch");
+	params.addBoolParam("bclampformants", "Switch for using clamped formants passed in from Matlab");	// UTF
 
 	/* Integer parameters */
 	params.addIntParam("srate", "Sampling rate (Hz), after downsampling");
@@ -159,6 +160,7 @@ Audapter::Audapter() :
 	/* Integer array parameters */
 	params.addIntArrayParam("pvocampnormtrans", "Phase vocoder amplitude normalization transitional period length (frames)");
 	params.addIntArrayParam("delayframes",	"DAF global delay (frames): maxNVoices-long array");
+	params.addIntArrayParam("clamposts", "OST values to start [0] and stop [1] using clamped formant values");	// UTF
 
 	/* Double parameters */
 	params.addDoubleParam("scale", "Output scaling factor (gain)");
@@ -211,6 +213,8 @@ Audapter::Audapter() :
 	params.addDoubleArrayParam("tsgtoneamp", "Tone sequence generator: tone peak amplitudes");
 	params.addDoubleArrayParam("tsgtoneramp", "Tone sequence generator: tone ramp durations (s)");
 	params.addDoubleArrayParam("tsgint", "Tone sequence generator: intervals between tone onsets (s)");
+	params.addDoubleArrayParam("clampf1", "F1 values used during clamped signal output");		// UTF
+	params.addDoubleArrayParam("clampf2", "F2 values used during clamped signal output");		// UTF
 
 	/* Double 2D array parameters */
 	params.addDouble2DArrayParam("pertamp2d", "Formant perturbation field: Perturbation vector amplitude for F1-F2");
@@ -420,6 +424,14 @@ Audapter::Audapter() :
 	intShiftRatio = 1.0;
 	amp_ratio = 1.0;
 	amp_ratio_prev = 1.0;
+
+	/* CWN 2020 formant clamping*/	// UTF
+	p.bClampFormants = 0;	// use clamped formants piped in from MATLAB as opposed to Audapter-calculated formants
+	for (n = 0; n < maxPBSize; n++) {
+		p.clamp_f1[n] = 0;
+		p.clamp_f2[n] = 0;
+	}
+	p.clamp_osts[0] = 0; p.clamp_osts[1] = 0;
 
 	/* Initialize formant tracker */
 	try {
@@ -1123,6 +1135,29 @@ void *Audapter::setGetParam(bool bSet,
 	else if (ns == string("fb2gain")) {
 		ptr = (void *)&p.fb2Gain;
 	}
+	else if (ns == string("bclampformants")) {		// UTF
+		ptr = (void*)&p.bClampFormants;
+	}
+	else if (ns == string("clampf1")) {		// UTF
+		ptr = (void*)p.clamp_f1;
+
+		if (bSet && (nPars > maxPBSize))
+			mexErrMsgTxt("Clamped F1 value array is too long");
+
+		len = (nPars < maxPBSize) ? nPars : maxPBSize;
+	}
+	else if (ns == string("clampf2")) {		// UTF
+		ptr = (void*)p.clamp_f2;
+
+		if (bSet && (nPars > maxPBSize))
+			mexErrMsgTxt("Clamped F2 value array is too long");
+
+		len = (nPars < maxPBSize) ? nPars : maxPBSize;
+	}
+	else if (ns == string("clamposts")) {
+		ptr = (void*)p.clamp_osts;
+		len = 2;
+	}
 	else {		
 		string errStr("Unknown parameter name: ");
 		errStr += string(name);
@@ -1161,7 +1196,7 @@ void *Audapter::setGetParam(bool bSet,
 			for (int i = 0; i < len; i++) {
 				*((dtype *)ptr + i) = static_cast<dtype>(*((dtype *)value + i));
 			}
-			if (ns == string("datapb")) { /* Zero out the remaining part */
+			if (ns == string("datapb") || ns == string("clampf1") || ns == string("clampf2")) { /* Zero out the remaining part */	// UTF
 				for (int i = len; i < maxPBSize; i++)
 					*((dtype*)ptr + i) = 0.0;
 			}
