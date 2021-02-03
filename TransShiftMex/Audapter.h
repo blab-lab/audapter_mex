@@ -514,10 +514,10 @@ private:
 		int pvocAmpNormTrans; /* Length of the amplitude normalization factor transitional period */
 
 		/* CWN 2020 formant clamping*/
-		int	bClampFormants;			// use clamped formants piped in from MATLAB as opposed to Audapter-calculated formants // UTF
-		int clamp_f1[maxPBSize];	// UTF
-		int clamp_f2[maxPBSize];	// UTF
-		int clamp_osts[2];			// ix [0] is the OST status which signals, start using clamped formants. ix [1] is OST to stop clamping. // UTF
+		int	bClampFormants;			// use clamped formants piped in from MATLAB as opposed to Audapter-calculated formants // taimComp
+		int clamp_f1[maxPBSize];	// taimComp
+		int clamp_f2[maxPBSize];	// taimComp
+		int clamp_osts[2];			// ix [0] is the OST status which signals, start using clamped formants. ix [1] is OST to stop clamping. // taimComp
 	} p;
 
 
