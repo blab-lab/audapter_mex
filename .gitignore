@@ -23,6 +23,7 @@
 *.unsuccessfulbuild
 *.ncb
 *.suo
+*.vs
 ipch/
 obj/
 [Bb]in
