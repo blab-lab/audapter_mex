@@ -1830,7 +1830,7 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 					newPhis[1]=mel2hz(sf2m)/p.sr*2*M_PI;
 				}
 				else if (p.bClampFormants && stat >= p.clamp_osts[0] && stat < p.clamp_osts[1]){		// taimComp
-					newPhis[0] = p.clamp_f1[clampIx];
+					newPhis[0] = p.clamp_f1[clampIx];	
 					newPhis[1] = p.clamp_f2[clampIx];
 				}
 				else{
