@@ -1761,7 +1761,7 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 				locintf1 = static_cast<int>(floor(locf1)); //2D pert field edit
 				locfracf1 = locf1 - locintf1; //2D pert field edit
 				locintf2 = static_cast<int>(floor(locf2)); //2D pert field edit
-				locfracf2 = locf1 - locintf2;
+				locfracf2 = locf2 - locintf2;
 				
 				/* That using ost and pcf files overrides the perturbation field 
 					specified with pertF2, pertAmp, pertPhi. */
@@ -2328,7 +2328,7 @@ bool Audapter::detectTrans(dtype *fmt_ptr, dtype *dFmt_ptr,int datcnt, dtype tim
 			}
 			else{
 				btransition=false;				
-				//if (p.transCounter>=p.minVowelLen){	CWN TODO TESTING for dropouts
+				//if (p.transCounter>=p.minVowelLen){	CWN removed for dropouts
 				//	p.transDone=true;
 				//}
 				p.transCounter=0;
@@ -2337,7 +2337,7 @@ bool Audapter::detectTrans(dtype *fmt_ptr, dtype *dFmt_ptr,int datcnt, dtype tim
 		else{
 			btransition=false;
 			p.transCounter=0;
-			p.transDone = false;	// CWN TODO TESTING for dropouts
+			p.transDone = false;	// CWN added for dropouts
 		}
 	}
 	else{
