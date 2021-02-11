@@ -1154,7 +1154,7 @@ void *Audapter::setGetParam(bool bSet,
 
 		len = (nPars < maxPBSize) ? nPars : maxPBSize;
 	}
-	else if (ns == string("clamposts")) {
+	else if (ns == string("clamposts")) {	// taimComp
 		ptr = (void*)p.clamp_osts;
 		len = 2;
 	}
@@ -1627,6 +1627,7 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 	dtype outputBuf[maxFrameLen];
 
 	static dtype time_elapsed=0;
+	static int	clampIx = 0;
 
 	int fi=0, si=0, i0=0, offs=0, quit_hqr=0, indx=0, nZC=0, nZCp=0;	
 	dtype rms_s, rms_p, rms_o, rms_fb, wei;
