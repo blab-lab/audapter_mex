@@ -427,7 +427,7 @@ Audapter::Audapter() :
 
 	/* CWN 2020 formant clamping*/	// taimComp
 	p.bClampFormants = 0;	// use clamped formants piped in from MATLAB as opposed to Audapter-calculated formants
-	for (n = 0; n < maxPBSize; n++) {
+	for (n = 0; n < pfNPoints; n++) {
 		p.clamp_f1[n] = 0;
 		p.clamp_f2[n] = 0;
 	}
@@ -1196,8 +1196,12 @@ void *Audapter::setGetParam(bool bSet,
 			for (int i = 0; i < len; i++) {
 				*((dtype *)ptr + i) = static_cast<dtype>(*((dtype *)value + i));
 			}
-			if (ns == string("datapb") || ns == string("clampf1") || ns == string("clampf2")) { /* Zero out the remaining part */	// taimComp
+			if (ns == string("datapb")) { /* Zero out the remaining part */
 				for (int i = len; i < maxPBSize; i++)
+					*((dtype*)ptr + i) = 0.0;
+			}
+			else if (ns == string("clampf1") || ns == string("clampf2")) { /* Zero out the remaining part */	// taimComp
+				for (int i = len; i < pfNPoints; i++)
 					*((dtype*)ptr + i) = 0.0;
 			}
 		}
@@ -1787,7 +1791,13 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 				during_trans = (pertCfg.fmtPertAmp[stat] != 0);
 			}
 
-			if (during_trans && above_rms) {  // Determine whether the current point in perturbation field
+			if (p.bClampFormants && stat >= p.clamp_osts[0] && stat < p.clamp_osts[1]) {		// taimComp
+				newPhis[0] = p.clamp_f1[clampIx];
+				newPhis[1] = p.clamp_f2[clampIx];
+				during_trans = true;	// TODO(CWN) this is pretty hacky, should probably just have some way to circumvent check in L1852
+				clampIx += 1;		// TODO(CWN) could cause problems if clampIx referenced later before next loop
+			}
+			else if (during_trans && above_rms) {  // Determine whether the current point in perturbation field
 			    // yes : windowed deviation over x coordinate
 				//loc = locateF2(f2mp);	// Interpolation (linear)								
                 //locint = static_cast<int>(floor(loc));
@@ -1829,10 +1839,6 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 				if (p.bMelShift){
 					newPhis[0]=mel2hz(sf1m)/p.sr*2*M_PI;	// Convert back to Hz
 					newPhis[1]=mel2hz(sf2m)/p.sr*2*M_PI;
-				}
-				else if (p.bClampFormants && stat >= p.clamp_osts[0] && stat < p.clamp_osts[1]){		// taimComp
-					newPhis[0] = p.clamp_f1[clampIx];	
-					newPhis[1] = p.clamp_f2[clampIx];
 				}
 				else{
 					newPhis[0]=sf1m/p.sr*2*M_PI;
