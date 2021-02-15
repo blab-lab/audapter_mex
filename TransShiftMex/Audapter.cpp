@@ -1141,18 +1141,20 @@ void *Audapter::setGetParam(bool bSet,
 	else if (ns == string("clampf1")) {		// taimComp
 		ptr = (void*)p.clamp_f1;
 
-		if (bSet && (nPars > maxPBSize))
-			mexErrMsgTxt("Clamped F1 value array is too long");
+		//if (bSet && (nPars > maxPBSize))
+		//	mexErrMsgTxt("Clamped F1 value array is too long");
 
-		len = (nPars < maxPBSize) ? nPars : maxPBSize;
+		//len = (nPars < maxPBSize) ? nPars : maxPBSize;
+		len = pfNPoints;
 	}
 	else if (ns == string("clampf2")) {		// taimComp
 		ptr = (void*)p.clamp_f2;
 
-		if (bSet && (nPars > maxPBSize))
-			mexErrMsgTxt("Clamped F2 value array is too long");
+		//if (bSet && (nPars > maxPBSize))
+		//	mexErrMsgTxt("Clamped F2 value array is too long");
 
-		len = (nPars < maxPBSize) ? nPars : maxPBSize;
+		//len = (nPars < maxPBSize) ? nPars : maxPBSize;
+		len = pfNPoints;
 	}
 	else if (ns == string("clamposts")) {	// taimComp
 		ptr = (void*)p.clamp_osts;
@@ -1200,10 +1202,10 @@ void *Audapter::setGetParam(bool bSet,
 				for (int i = len; i < maxPBSize; i++)
 					*((dtype*)ptr + i) = 0.0;
 			}
-			else if (ns == string("clampf1") || ns == string("clampf2")) { /* Zero out the remaining part */	// taimComp
-				for (int i = len; i < pfNPoints; i++)
-					*((dtype*)ptr + i) = 0.0;
-			}
+			//else if (ns == string("clampf1") || ns == string("clampf2")) { /* Zero out the remaining part */	// taimComp
+			//	for (int i = len; i < pfNPoints; i++)
+			//		*((dtype*)ptr + i) = 0.0;
+			//}
 		}
 		else if (pType == Parameter::TYPE_DOUBLE_2DARRAY) {
 			for (int i = 0; i < len; i++) {
