@@ -1849,6 +1849,7 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 			}
 			else {
                 // no : no force applied
+				clampIx = 0;
 				maintain_trans=false;
 				during_trans=false;	
 				newPhis[0]=wmaPhis[0];	// No shifting
