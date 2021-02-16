@@ -515,7 +515,7 @@ private:
 
 		/* CWN 2020 formant clamping*/
 		int	bClampFormants;			// use clamped formants piped in from MATLAB as opposed to Audapter-calculated formants // taimComp
-		int clamp_osts[1];			// ix [0] is the OST status which signals, start using clamped formants. ix [1] is OST to stop clamping. // taimComp
+		int clamp_osts[2];			// ix [0] is the OST status which signals, start using clamped formants. ix [1] is OST to stop clamping. // taimComp
 		dtype clamp_f1[pfNPoints];	// taimComp
 		dtype clamp_f2[pfNPoints];	// taimComp
 		
