@@ -1141,8 +1141,8 @@ void *Audapter::setGetParam(bool bSet,
 	else if (ns == string("clampf1")) {		// taimComp
 		ptr = (void*)p.clamp_f1;
 
-		//if (bSet && (nPars > maxPBSize))
-		//	mexErrMsgTxt("Clamped F1 value array is too long");
+		if (bSet && (nPars > pfNPoints))
+			mexErrMsgTxt("Clamped F1 value array is too long");
 
 		//len = (nPars < maxPBSize) ? nPars : maxPBSize;
 		len = pfNPoints;
@@ -1150,8 +1150,8 @@ void *Audapter::setGetParam(bool bSet,
 	else if (ns == string("clampf2")) {		// taimComp
 		ptr = (void*)p.clamp_f2;
 
-		//if (bSet && (nPars > maxPBSize))
-		//	mexErrMsgTxt("Clamped F2 value array is too long");
+		if (bSet && (nPars > pfNPoints))
+			mexErrMsgTxt("Clamped F2 value array is too long");
 
 		//len = (nPars < maxPBSize) ? nPars : maxPBSize;
 		len = pfNPoints;
@@ -1794,10 +1794,16 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 			}
 
 			if (p.bClampFormants && stat >= p.clamp_osts[0] && stat < p.clamp_osts[1]) {		// taimComp
-				newPhis[0] = p.clamp_f1[clampIx];
-				newPhis[1] = p.clamp_f2[clampIx];
+				newPhis[0] = p.clamp_f1[clampIx] * 2 * M_PI / p.sr;	// This gets converted back to Hz when sFmts is set
+				newPhis[1] = p.clamp_f2[clampIx] * 2 * M_PI / p.sr;
 				during_trans = true;	// TODO(CWN) this is pretty hacky, should probably just have some way to circumvent check in L1852
-				clampIx += 1;		// TODO(CWN) could cause problems if clampIx referenced later before next loop
+				if (clampIx < pfNPoints-1) {
+					clampIx += 1;
+				}
+				else {
+					// don't increment
+				}
+					
 			}
 			else if (during_trans && above_rms) {  // Determine whether the current point in perturbation field
 			    // yes : windowed deviation over x coordinate
