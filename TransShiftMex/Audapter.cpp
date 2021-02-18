@@ -1143,9 +1143,11 @@ void *Audapter::setGetParam(bool bSet,
 
 		if (bSet && (nPars > pfNPoints))
 			mexErrMsgTxt("Clamped F1 value array is too long");
-
-		//len = (nPars < maxPBSize) ? nPars : maxPBSize;
+		
+			// this reads: "if nPars is less than pfNPoints, len = nPars. Else, len = pfNPoints".
+		//len = (nPars < pfNPoints) ? nPars : pfNPoints;	// TODO this should work, but nPars is 0 on subsequent loops (including each trial) after initializing
 		len = pfNPoints;
+
 	}
 	else if (ns == string("clampf2")) {		// taimComp
 		ptr = (void*)p.clamp_f2;
@@ -1153,7 +1155,7 @@ void *Audapter::setGetParam(bool bSet,
 		if (bSet && (nPars > pfNPoints))
 			mexErrMsgTxt("Clamped F2 value array is too long");
 
-		//len = (nPars < maxPBSize) ? nPars : maxPBSize;
+		//len = (nPars < pfNPoints) ? nPars : pfNPoints;	// TODO this should work, but nPars is 0 on subsequent loops (including each trial) after initializing
 		len = pfNPoints;
 	}
 	else if (ns == string("clamposts")) {	// taimComp
@@ -1202,6 +1204,7 @@ void *Audapter::setGetParam(bool bSet,
 				for (int i = len; i < maxPBSize; i++)
 					*((dtype*)ptr + i) = 0.0;
 			}
+			// This doesn't work for some reason if clamp_f1/2 aren't pfNPoints in length
 			//else if (ns == string("clampf1") || ns == string("clampf2")) { /* Zero out the remaining part */	// taimComp
 			//	for (int i = len; i < pfNPoints; i++)
 			//		*((dtype*)ptr + i) = 0.0;
@@ -1797,7 +1800,7 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 				newPhis[0] = p.clamp_f1[clampIx] * 2 * M_PI / p.sr;	// This gets converted back to Hz when sFmts is set
 				newPhis[1] = p.clamp_f2[clampIx] * 2 * M_PI / p.sr;
 				during_trans = true;	// TODO(CWN) this is pretty hacky, should probably just have some way to circumvent check in L1852
-				if (clampIx < pfNPoints-1) {
+				if ((clampIx < pfNPoints-2) && (p.clamp_f1[clampIx+1] != 0)) {
 					clampIx += 1;
 				}
 				else {
