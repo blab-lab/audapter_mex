@@ -1796,7 +1796,7 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 				during_trans = (pertCfg.fmtPertAmp[stat] != 0);
 			}
 
-			if (p.bClampFormants && stat >= p.clamp_osts[0] && stat < p.clamp_osts[1]) {		// taimComp
+			if (p.bClampFormants && stat >= p.clamp_osts[0] && stat < p.clamp_osts[1] && p.clamp_f1[clampIx] != 0) {		// taimComp
 				newPhis[0] = p.clamp_f1[clampIx] * 2 * M_PI / p.sr;	// This gets converted back to Hz when sFmts is set
 				newPhis[1] = p.clamp_f2[clampIx] * 2 * M_PI / p.sr;
 				during_trans = true;	// TODO(CWN) this is pretty hacky, should probably just have some way to circumvent check in L1852
