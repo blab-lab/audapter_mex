@@ -42,8 +42,11 @@ OST_TAB::OST_TAB() {
 	ostModeMap[string("POS_INTENSITY_SLOPE_STRETCH")] = POS_INTENSITY_SLOPE_STRETCH;
 	ostModeMap[string("NEG_INTENSITY_SLOPE_STRETCH_SPAN")] = NEG_INTENSITY_SLOPE_STRETCH_SPAN;
 	ostModeMap[string("INTENSITY_FALL")] = INTENSITY_FALL;
+	ostModeMap[string("INTENSITY_FALL_NEG_SLOPE")] = INTENSITY_FALL_NEG_SLOPE;
 	ostModeMap[string("INTENSITY_RATIO_RISE")] = INTENSITY_RATIO_RISE;
 	ostModeMap[string("INTENSITY_RATIO_FALL_HOLD")] = INTENSITY_RATIO_FALL_HOLD;
+	ostModeMap[string("INTENSITY_RATIO_FALL_HOLD_NEG_SLOPE")] = INTENSITY_RATIO_FALL_HOLD_NEG_SLOPE;
+	ostModeMap[string("INTENSITY_RATIO_RISE_WITH_FLOOR")] = INTENSITY_RATIO_RISE_WITH_FLOOR;
 }
 
 /* Destructor */
@@ -460,7 +463,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			}
 
 		}
-		else if (t_mode == INTENSITY_FALL) { // (+1) Fall from a certain RMS threshold
+		else if (t_mode == INTENSITY_FALL) { // (+2) Stay below a certain threshold for a certain duration
 			minDurN = static_cast<int>(floor(prm2[k] / frameDur + 0.5));
 
 			bIsGOET = 0;
@@ -479,6 +482,31 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				stat_out = stat + 1;
 				statOnsetIndices[stat_out] = frame_counter;
 				lastStatEnd = data_counter;
+			}
+
+		}
+		else if (t_mode == INTENSITY_FALL_NEG_SLOPE) { // (+2) Stay below a certain threshold for a certain duration, with (-) RMS slope throughout
+			if (stat == t_stat0) {
+				if ((rms_s < prm1[k]) && (rms_o_slp < 0)) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 1;
+				}
+			}
+			else {
+				minDurN = (int)floor(prm2[k] / frameDur + 0.5);
+
+				if ((rms_s < prm1[k]) && (rms_o_slp < 0)) {
+					stretchCnt++;
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+						lastStatEnd = data_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
 			}
 
 		}
@@ -542,6 +570,67 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				}
 			}
 		}
+		else if (t_mode == INTENSITY_RATIO_FALL_HOLD_NEG_SLOPE) { // (+2) RMS ratio below a threshold, with negative RMS ratio slope. prm1: rms_ratio threshold; prm2: minDurN
+			if (stat == t_stat0) {
+				if ((1. / rms_ratio < prm1[k]) && (rms_o_slp < 0)) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 0;
+				}
+			}
+			else if (stat - t_stat0 == 1) {
+				minDurN = (int)floor(prm2[k] / frameDur);
+
+				if ((1. / rms_ratio < prm1[k]) && (rms_o_slp < 0)) {
+					stretchCnt++;
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+			else { // CWN: Don't think this condition is possible, but keeping it anyway...
+				if ((1. / rms_ratio < prm1[k]) && (rms_o_slp < 0)) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					lastStatEnd = data_counter;
+				}
+			}
+		}
+		else if (t_mode == INTENSITY_RATIO_RISE_WITH_FLOOR) { // (+2) RMS ratio above threshold, with additional minimum RMS. prm1: rms_ratio threshold; prm2: minDurN
+			if (stat == t_stat0) {
+				if ((1. / rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 0;
+				}
+			}
+			else if (stat - t_stat0 == 1) {
+				minDurN = (int)floor(prm2[k] / frameDur);
+
+				if ((1. / rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
+					stretchCnt++;
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+			else { // CWN: Don't think this condition is possible, but keeping it anyway...
+				if ((1. / rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					lastStatEnd = data_counter;
+				}
+			}
+		}
+
 			 
 	}
 
