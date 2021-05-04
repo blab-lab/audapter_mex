@@ -41,6 +41,7 @@ OST_TAB::OST_TAB() {
 	ostModeMap[string("INTENSITY_RISE_HOLD_POS_SLOPE")] = INTENSITY_RISE_HOLD_POS_SLOPE;
 	ostModeMap[string("POS_INTENSITY_SLOPE_STRETCH")] = POS_INTENSITY_SLOPE_STRETCH;
 	ostModeMap[string("NEG_INTENSITY_SLOPE_STRETCH_SPAN")] = NEG_INTENSITY_SLOPE_STRETCH_SPAN;
+	ostModeMap[string("NEG_INTENSITY_SLOPE_BELOW_THRESH")] = NEG_INTENSITY_SLOPE_BELOW_THRESH;
 	ostModeMap[string("INTENSITY_FALL")] = INTENSITY_FALL;
 	ostModeMap[string("INTENSITY_FALL_NEG_SLOPE")] = INTENSITY_FALL_NEG_SLOPE;
 	ostModeMap[string("INTENSITY_RATIO_RISE")] = INTENSITY_RATIO_RISE;
@@ -472,6 +473,33 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			}
 
 		}
+		else if (t_mode == NEG_INTENSITY_SLOPE_BELOW_THRESH) { // (+2) RMS slope below defined threshold for defined duration. prm1: rms_slope threshold; prm2: minDur (s)
+			if (stat == t_stat0) {
+				if (rms_o_slp < prm1[k]) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 1;
+				}
+			}
+			else {
+				minDurN = (int)floor(prm2[k] / frameDur + 0.5);
+
+				if (rms_o_slp < prm1[k]) {
+					stretchCnt++;
+
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+						lastStatEnd = data_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+
+		}
+		
 		else if (t_mode == INTENSITY_FALL) { // (+2) Stay below a certain threshold for a certain duration
 			minDurN = static_cast<int>(floor(prm2[k] / frameDur + 0.5));
 
