@@ -41,14 +41,14 @@ OST_TAB::OST_TAB() {
 	ostModeMap[string("INTENSITY_RISE_HOLD_POS_SLOPE")] = INTENSITY_RISE_HOLD_POS_SLOPE;
 	ostModeMap[string("POS_INTENSITY_SLOPE_STRETCH")] = POS_INTENSITY_SLOPE_STRETCH;
 	ostModeMap[string("NEG_INTENSITY_SLOPE_STRETCH_SPAN")] = NEG_INTENSITY_SLOPE_STRETCH_SPAN;
-	ostModeMap[string("NEG_INTENSITY_SLOPE_BELOW_THRESH")] = NEG_INTENSITY_SLOPE_BELOW_THRESH;
+	ostModeMap[string("INTENSITY_SLOPE_BELOW_THRESH")] = INTENSITY_SLOPE_BELOW_THRESH;	// CWN add-on
 	ostModeMap[string("INTENSITY_FALL")] = INTENSITY_FALL;
-	ostModeMap[string("INTENSITY_FALL_NEG_SLOPE")] = INTENSITY_FALL_NEG_SLOPE;
+	ostModeMap[string("INTENSITY_BELOW_THRESH_NEG_SLOPE")] = INTENSITY_BELOW_THRESH_NEG_SLOPE;	// CWN add-on
 	ostModeMap[string("INTENSITY_RATIO_RISE")] = INTENSITY_RATIO_RISE;
 	ostModeMap[string("INTENSITY_RATIO_FALL_HOLD")] = INTENSITY_RATIO_FALL_HOLD;
-	ostModeMap[string("INTENSITY_RATIO_FALL_HOLD_NEG_SLOPE")] = INTENSITY_RATIO_FALL_HOLD_NEG_SLOPE;
-	ostModeMap[string("INTENSITY_RATIO_RISE_WITH_FLOOR")] = INTENSITY_RATIO_RISE_WITH_FLOOR;
-	ostModeMap[string("INTENSITY_AND_RATIO_RISE_HOLD")] = INTENSITY_AND_RATIO_RISE_HOLD;
+	ostModeMap[string("INTENSITY_RATIO_BELOW_THRESH_NEG_SLOPE")] = INTENSITY_RATIO_BELOW_THRESH_NEG_SLOPE;	// CWN add-on
+	ostModeMap[string("INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR")] = INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR; // CWN add-on
+	ostModeMap[string("INTENSITY_AND_RATIO_ABOVE_THRESH")] = INTENSITY_AND_RATIO_ABOVE_THRESH;	// CWN add-on
 }
 
 /* Destructor */
@@ -473,7 +473,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			}
 
 		}
-		else if (t_mode == NEG_INTENSITY_SLOPE_BELOW_THRESH) { // (+2) RMS slope below defined threshold for defined duration. prm1: rms_slope threshold; prm2: minDur (s)
+		else if (t_mode == INTENSITY_SLOPE_BELOW_THRESH) { // (+2) RMS slope below defined threshold for defined duration. prm1: rms_slope threshold; prm2: minDur (s)
 			if (stat == t_stat0) {
 				if (rms_o_slp < prm1[k]) {
 					stat_out = stat + 1;
@@ -522,7 +522,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			}
 
 		}
-		else if (t_mode == INTENSITY_FALL_NEG_SLOPE) { // (+2) Stay below a certain threshold for a certain duration, with (-) RMS slope throughout
+		else if (t_mode == INTENSITY_BELOW_THRESH_NEG_SLOPE) { // (+2) Stay below a certain threshold for a certain duration, with (-) RMS slope throughout
 			if (stat == t_stat0) {
 				if ((rms_s < prm1[k]) && (rms_o_slp < 0)) {
 					stat_out = stat + 1;
@@ -607,7 +607,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				}
 			}
 		}
-		else if (t_mode == INTENSITY_RATIO_FALL_HOLD_NEG_SLOPE) { // (+2) RMS ratio below a threshold, with negative RMS ratio slope. prm1: rms_ratio threshold; prm2: minDurN
+		else if (t_mode == INTENSITY_RATIO_BELOW_THRESH_NEG_SLOPE) { // (+2) RMS ratio below a threshold, with negative RMS ratio slope. prm1: rms_ratio threshold; prm2: minDurN
 			if (stat == t_stat0) {
 				if ((1. / rms_ratio < prm1[k]) && (rms_o_slp < 0)) {
 					stat_out = stat + 1;
@@ -637,7 +637,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				}
 			}
 		}
-		else if (t_mode == INTENSITY_RATIO_RISE_WITH_FLOOR) { // (+2) RMS ratio above threshold, with additional minimum RMS. prm1: rms_ratio threshold; prm2: minDurN
+		else if (t_mode == INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR) { // (+2) RMS ratio above threshold, with additional minimum RMS. prm1: rms_ratio threshold; prm2: minDurN
 			if (stat == t_stat0) {
 				// If RMS intensity isn't above 0.0003, ignore the ratio as it's too noisy at low intensities
 				if ((1. / rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
@@ -668,7 +668,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				}
 			}
 		}
-		else if (t_mode == INTENSITY_AND_RATIO_RISE_HOLD) { // (+2) Above RMS threshold and RMS Ratio threshold for specified duration. prm1: rmsThresh; prms2: rms_ratio threshold; prm3: minHoldDur (s)			
+		else if (t_mode == INTENSITY_AND_RATIO_ABOVE_THRESH) { // (+2) Above RMS threshold and RMS Ratio threshold for specified duration. prm1: rmsThresh; prms2: rms_ratio threshold; prm3: minHoldDur (s)			
 			if (stat == t_stat0) {
 				if ((rms_s > prm1[k]) && (1. / rms_ratio > prm2[k])) {
 					stat_out = stat + 1;
