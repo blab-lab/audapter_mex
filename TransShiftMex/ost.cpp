@@ -510,7 +510,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			}
 
 		}
-		else if (t_mode == INTENSITY_RATIO_RISE) { // (+2) RMS ratio cross, hold and fall. prm1: rms_ratio threshold; prm2: minDurN
+		else if (t_mode == INTENSITY_RATIO_RISE) { // (+2) RMS ratio above threshold for specified duration. prm1: rms_ratio threshold; prm2: minDurN
 			if (stat == t_stat0) {
 				if (1. / rms_ratio > prm1[k]) {
 					stat_out = stat + 1;
@@ -602,6 +602,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 		}
 		else if (t_mode == INTENSITY_RATIO_RISE_WITH_FLOOR) { // (+2) RMS ratio above threshold, with additional minimum RMS. prm1: rms_ratio threshold; prm2: minDurN
 			if (stat == t_stat0) {
+				// If RMS intensity isn't above 0.0003, ignore the ratio as it's too noisy at low intensities
 				if ((1. / rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
 					stat_out = stat + 1;
 					statOnsetIndices[stat_out] = frame_counter;
