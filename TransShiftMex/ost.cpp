@@ -47,6 +47,7 @@ OST_TAB::OST_TAB() {
 	ostModeMap[string("INTENSITY_RATIO_FALL_HOLD")] = INTENSITY_RATIO_FALL_HOLD;
 	ostModeMap[string("INTENSITY_RATIO_FALL_HOLD_NEG_SLOPE")] = INTENSITY_RATIO_FALL_HOLD_NEG_SLOPE;
 	ostModeMap[string("INTENSITY_RATIO_RISE_WITH_FLOOR")] = INTENSITY_RATIO_RISE_WITH_FLOOR;
+	ostModeMap[string("INTENSITY_AND_RATIO_RISE_HOLD")] = INTENSITY_AND_RATIO_RISE_HOLD;
 }
 
 /* Destructor */
@@ -151,6 +152,10 @@ void OST_TAB::readFromFile(const string ostFN, const int bVerbose)
 		free(prm2);
 		prm2 = NULL;
 	}
+	if (prm3) {
+		free(prm3);
+		prm3 = NULL;
+	}
 	
 	if (maxIOICfg.stat0) {
 		free(maxIOICfg.stat0);
@@ -212,11 +217,14 @@ void OST_TAB::readFromFile(const string ostFN, const int bVerbose)
 		printf("ERROR: failed to allocate memor for ostTab.prm2");
 		return;
 	}
-	
+	if ((prm3 = (double*)calloc(n, sizeof(double))) == NULL) {
+		printf("ERROR: failed to allocate memory for ostTab.prm3");
+		return;
+	}
+
 	for (i0 = 0; i0 < n; i0++) {
 		items = removeComments(splitStringToVector(*(++lit)), commentChar);
-		if ( (items.size() != 5) || 
-			 (items[4] != string("{}")) )
+		if ( (items.size() != 5) )
 			throw ostFileSyntaxError(*lit);
 		stat0[i0] = atoi(items[0].c_str());
 
@@ -235,6 +243,7 @@ void OST_TAB::readFromFile(const string ostFN, const int bVerbose)
 
 		prm1[i0] = atof(items[2].c_str());
 		prm2[i0] = atof(items[3].c_str());
+		prm3[i0] = atof(items[4].c_str());
 	
 		if (bVerbose)
 			printf("\tSeg %d: stat0=%d; mode=%d; prm1=%f; prm2=%f\n", 
@@ -630,6 +639,31 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 					lastStatEnd = data_counter;
 				}
 			}
+		}
+		else if (t_mode == INTENSITY_AND_RATIO_RISE_HOLD) { // (+2) Above RMS threshold and RMS Ratio threshold for specified duration. prm1: rmsThresh; prms2: rms_ratio threshold; prm3: minHoldDur (s)			
+			if (stat == t_stat0) {
+				if ((rms_s > prm1[k]) && (1. / rms_ratio > prm2[k])) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 1;
+				}
+			}
+			else {
+				minDurN = (int)floor(prm3[k] / frameDur + 0.5);
+
+				if ((rms_s > prm1[k]) && (1. / rms_ratio > prm2[k])) {
+					stretchCnt++;
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+						lastStatEnd = data_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+
 		}
 
 			 
