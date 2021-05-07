@@ -1799,7 +1799,7 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 			if (p.bClampFormants && stat >= p.clamp_osts[0] && stat < p.clamp_osts[1] && p.clamp_f1[clampIx] != 0) {		// taimComp
 				newPhis[0] = p.clamp_f1[clampIx] * 2 * M_PI / p.sr;	// This gets converted back to Hz when sFmts is set
 				newPhis[1] = p.clamp_f2[clampIx] * 2 * M_PI / p.sr;
-				during_trans = true;	// TODO(CWN) this is relatively hacky. Should probably just have some way to circumvent during_trans check in L1852
+				during_trans = true;	// TODO(CWN) this is relatively hacky. Should probably just have some way to circumvent during_trans check in L1868
 				if ((clampIx < maxNClampFrames-2) && (p.clamp_f1[clampIx+1] != 0)) {
 					clampIx += 1;
 				}
