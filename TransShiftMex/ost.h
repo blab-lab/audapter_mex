@@ -42,7 +42,9 @@ private:
 		INTENSITY_RATIO_FALL_HOLD = 31,
 		INTENSITY_RATIO_BELOW_THRESH_NEG_SLOPE = 32, // CWN add-on
 		INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR = 33, //CWN add-on
-		INTENSITY_AND_RATIO_ABOVE_THRESH = 40 // CWN add-on
+		INTENSITY_AND_RATIO_ABOVE_THRESH = 40, // CWN add-on
+		INTENSITY_RATIO_SLOPE_ABOVE_THRESH = 50,	// CWN add-on
+		INTENSITY_RATIO_SLOPE_BELOW_THRESH = 55		// CWN add-on
 	} OST_MODE_NAME;
 
 	std::map<std::string, int> ostModeMap;
@@ -102,8 +104,8 @@ public:
 
 	/* Main function: online status tracking */
 	int osTrack(const int stat, const int data_counter, const int frame_counter, 
-		     	const double rms_s, const double rms_o_slp, const double rms_ratio, const double *rms_rec, 
-				const double frameDur);
+		     	const double rms_s, const double rms_o_slp, const double rms_ratio, 
+				const double rms_ratio_slp, const double *rms_rec, const double frameDur);
 
 	/* Reset status */
 	void reset();

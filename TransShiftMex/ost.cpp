@@ -49,6 +49,8 @@ OST_TAB::OST_TAB() {
 	ostModeMap[string("INTENSITY_RATIO_BELOW_THRESH_NEG_SLOPE")] = INTENSITY_RATIO_BELOW_THRESH_NEG_SLOPE;	// CWN add-on
 	ostModeMap[string("INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR")] = INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR; // CWN add-on
 	ostModeMap[string("INTENSITY_AND_RATIO_ABOVE_THRESH")] = INTENSITY_AND_RATIO_ABOVE_THRESH;	// CWN add-on
+	ostModeMap[string("INTENSITY_RATIO_SLOPE_ABOVE_THRESH")] = INTENSITY_RATIO_SLOPE_ABOVE_THRESH;	// CWN add-on
+	ostModeMap[string("INTENSITY_RATIO_SLOPE_BELOW_THRESH")] = INTENSITY_RATIO_SLOPE_BELOW_THRESH;	// CWN add-on
 }
 
 /* Destructor */
@@ -333,8 +335,8 @@ void OST_TAB::nullify() {
 }
 
 int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_counter, 
-					 const double rms_s, const double rms_o_slp, const double rms_ratio, const double *rms_rec, 
-					 const double frameDur) {
+					 const double rms_s, const double rms_o_slp, const double rms_ratio,
+					 const double rms_ratio_slp, const double *rms_rec, const double frameDur) {
 /* Input: stat: current status number */
 	int k, i, j;
 	int t_stat0, t_mode;
@@ -693,6 +695,60 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			}
 
 		}
+		else if (t_mode == INTENSITY_RATIO_SLOPE_ABOVE_THRESH) { // (+2) Above RMS ratio slope threshold for specified duration. prm1: rmsRatioSlope threshold; prms2: minHoldDur (s);			
+			if (stat == t_stat0) {
+				if (rms_ratio_slp > prm1[k]) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 1;
+				}
+			}
+			else {
+				minDurN = (int)floor(prm2[k] / frameDur + 0.5);
+
+				if (rms_ratio_slp > prm1[k]) {
+					stretchCnt++;
+
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+						lastStatEnd = data_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+
+		}
+		else if (t_mode == INTENSITY_RATIO_SLOPE_BELOW_THRESH) { // (+2) Below RMS ratio slope threshold for specified duration. prm1: rmsRatioSlope threshold; prms2: minHoldDur (s);			
+			if (stat == t_stat0) {
+				if (rms_ratio_slp < prm1[k]) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 1;
+				}
+			}
+			else {
+				minDurN = (int)floor(prm2[k] / frameDur + 0.5);
+
+				if (rms_ratio_slp < prm1[k]) {
+					stretchCnt++;
+
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+						lastStatEnd = data_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+
+		}
+
+		
 
 			 
 	}
