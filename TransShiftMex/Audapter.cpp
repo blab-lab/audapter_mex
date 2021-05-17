@@ -1865,7 +1865,7 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 		offs += 1;
 
 		//CWN Write rms_ratio and rms_ratio_slp (RMS ratio slope) to data_recorder
-		data_recorder[offs][data_counter] = rms_ratio[data_counter];
+		data_recorder[offs][data_counter] = 1. / rms_ratio[data_counter];		// CWN TODO: change this. rms_ratio definition should be flipped later.
 		data_recorder[offs + 1][data_counter] = rms_ratio_slp[data_counter];
 		
 		offs += 2;
@@ -2969,17 +2969,17 @@ void Audapter::calcRMSSlope() {
 	else {
 		// Calculate mean y (mean rms ratio slope)
 		for (i0 = 0; i0 < rmsSlopeN; i0++) {
-			mn_y += rms_ratio[data_counter - rmsSlopeN + 1 + i0];
+			mn_y += 1. / rms_ratio[data_counter - rmsSlopeN + 1 + i0];	// CWN TODO: remove workaround of flipping rms_ratio.
 		}
 		mn_y /= rmsSlopeN;
 
 		for (i0 = 0; i0 < rmsSlopeN; i0++) {
 			den += (i0 - mn_x) * (i0 - mn_x);
-			nom += (i0 - mn_x) * (rms_ratio[data_counter - rmsSlopeN + 1 + i0] - mn_y);
+			nom += (i0 - mn_x) * (1. / rms_ratio[data_counter - rmsSlopeN + 1 + i0] - mn_y);   // CWN TODO: remove workaround of flipping rms_ratio.
 		}
 	}
 	
-	rms_ratio_slp[data_counter] = -nom / den / (p.frameLen / static_cast<dtype>(p.sr));
+	rms_ratio_slp[data_counter] = nom / den / (p.frameLen / static_cast<dtype>(p.sr));
 
 	
 }

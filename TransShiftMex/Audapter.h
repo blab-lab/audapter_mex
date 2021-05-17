@@ -161,7 +161,7 @@ private:
 	static const int max_nFFT = 4096;
 
 	/* Data recorder */
-	static const int maxDataVec = 2 * maxNTracks + 10 + maxNLPC + 7;
+	static const int maxDataVec = 2 * maxNTracks + 10 + maxNLPC + 7; // CWN +2 for rms_ratio and rms_ratio_slp
 	static const int maxRecSize = 230400;
     static const int maxDataSize = 230400;
 	
