@@ -1865,7 +1865,7 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 		offs += 1;
 
 		//CWN Write rms_ratio and rms_ratio_slp (RMS ratio slope) to data_recorder
-		data_recorder[offs][data_counter] = 1. / rms_ratio[data_counter];		// CWN TODO: change this. rms_ratio definition should be flipped later.
+		data_recorder[offs][data_counter] = 1. / rms_ratio[data_counter];		// CWN TODO: remove workaround of flipping rms_ratio.
 		data_recorder[offs + 1][data_counter] = rms_ratio_slp[data_counter];
 		
 		offs += 2;
