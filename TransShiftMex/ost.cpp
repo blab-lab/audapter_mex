@@ -640,7 +640,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 
 		else if (t_mode == INTENSITY_RATIO_BELOW_THRESH_NEG_SLOPE) { // (+2) RMS ratio below a threshold for a certain duration, with negative RMS slope throughout. prm1: rms_ratio threshold; prm2: minDurN
 			if (stat == t_stat0) {
-				if ((rms_ratio < prm1[k]) && (rms_o_slp < 0)) {
+				if ((1. / rms_ratio < prm1[k]) && (rms_o_slp < 0)) {
 					stat_out = stat + 1;
 					statOnsetIndices[stat_out] = frame_counter;
 					stretchCnt = 0;
@@ -649,7 +649,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			else if (stat - t_stat0 == 1) {
 				minDurN = (int)floor(prm2[k] / frameDur);
 
-				if ((rms_ratio < prm1[k]) && (rms_o_slp < 0)) {
+				if ((1. / rms_ratio < prm1[k]) && (rms_o_slp < 0)) {
 					stretchCnt++;
 					if (stretchCnt > minDurN) {
 						stat_out = stat + 1;
@@ -666,7 +666,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 		else if (t_mode == INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR) { // (+2) RMS ratio above threshold, with minimum RMS throughout. prm1: rms_ratio threshold; prm2: minDurN
 			if (stat == t_stat0) {
 				// If RMS intensity isn't above 0.0003, ignore the ratio as it's too noisy at low intensities
-				if ((rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
+				if ((1. / rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
 					stat_out = stat + 1;
 					statOnsetIndices[stat_out] = frame_counter;
 					stretchCnt = 0;
@@ -675,7 +675,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			else if (stat - t_stat0 == 1) {
 				minDurN = (int)floor(prm2[k] / frameDur);
 
-				if ((rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
+				if ((1. / rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
 					stretchCnt++;
 					if (stretchCnt > minDurN) {
 						stat_out = stat + 1;
@@ -691,7 +691,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 
 		else if (t_mode == INTENSITY_AND_RATIO_ABOVE_THRESH) { // (+2) RMS above threshold (prm1) and RMS Ratio above threshold (prm2) for specified duration. prm1: rms threshold; prms2: rms_ratio threshold; prm3: minHoldDur (s)			
 			if (stat == t_stat0) {
-				if ((rms_s > prm1[k]) && (rms_ratio > prm2[k])) {
+				if ((rms_s > prm1[k]) && (1. / rms_ratio > prm2[k])) {
 					stat_out = stat + 1;
 					statOnsetIndices[stat_out] = frame_counter;
 					stretchCnt = 1;
@@ -700,7 +700,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			else {
 				minDurN = (int)floor(prm3[k] / frameDur + 0.5);
 
-				if ((rms_s > prm1[k]) && (rms_ratio > prm2[k])) {
+				if ((rms_s > prm1[k]) && (1. / rms_ratio > prm2[k])) {
 					stretchCnt++;
 					if (stretchCnt > minDurN) {
 						stat_out = stat + 1;
