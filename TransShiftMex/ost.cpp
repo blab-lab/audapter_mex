@@ -48,7 +48,7 @@ OST_TAB::OST_TAB() {
 	ostModeMap[string("INTENSITY_RATIO_RISE")] = INTENSITY_RATIO_RISE;
 	ostModeMap[string("INTENSITY_RATIO_FALL_HOLD")] = INTENSITY_RATIO_FALL_HOLD;
 	ostModeMap[string("INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR")] = INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR;
-	ostModeMap[string("INTENSITY_AND_RATIO_ABOVE_THRESH")] = INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR;
+	ostModeMap[string("INTENSITY_AND_RATIO_ABOVE_THRESH")] = INTENSITY_AND_RATIO_ABOVE_THRESH;
 }
 
 /* Destructor */
@@ -253,7 +253,7 @@ throw(ostFileReadingError,
 	}
 
 	if ((statOnsetIndices = (int *) calloc(n * maxStatesPerLine, sizeof(int))) == NULL) {
-		printf("ERROR: failed to allocate memor for statOnsetIndices");
+		printf("ERROR: failed to allocate memory for statOnsetIndices");
 		return;
 	}
 
@@ -274,15 +274,15 @@ throw(ostFileReadingError,
 			printf("ostTab.maxIOICfg.n = %d\n", maxIOICfg.n);
 
 		if ((maxIOICfg.stat0 = (int *)calloc(maxIOICfg.n, sizeof(int))) == NULL) {
-			printf("ERROR: failed to allocate memor for ostTab.maxIOICfg.stat0");
+			printf("ERROR: failed to allocate memory for ostTab.maxIOICfg.stat0");
 			return;
 		}
 		if ((maxIOICfg.maxInterval = (double *)calloc(maxIOICfg.n, sizeof(double))) == NULL) {
-			printf("ERROR: failed to allocate memor for ostTab.maxIOICfg.maxInterval");
+			printf("ERROR: failed to allocate memory for ostTab.maxIOICfg.maxInterval");
 			return;
 		}
 		if ((maxIOICfg.stat1 = (int *)calloc(maxIOICfg.n, sizeof(int))) == NULL) {
-			printf("ERROR: failed to allocate memor for ostTab.maxIOICfg.stat1");
+			printf("ERROR: failed to allocate memory for ostTab.maxIOICfg.stat1");
 			return;
 		}
 
