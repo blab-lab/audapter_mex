@@ -41,9 +41,14 @@ OST_TAB::OST_TAB() {
 	ostModeMap[string("INTENSITY_RISE_HOLD_POS_SLOPE")] = INTENSITY_RISE_HOLD_POS_SLOPE;
 	ostModeMap[string("POS_INTENSITY_SLOPE_STRETCH")] = POS_INTENSITY_SLOPE_STRETCH;
 	ostModeMap[string("NEG_INTENSITY_SLOPE_STRETCH_SPAN")] = NEG_INTENSITY_SLOPE_STRETCH_SPAN;
+	ostModeMap[string("INTENSITY_SLOPE_BELOW_THRESH")] = INTENSITY_SLOPE_BELOW_THRESH;
+	ostModeMap[string("INTENSITY_SLOPE_ABOVE_THRESH")] = INTENSITY_SLOPE_ABOVE_THRESH;
 	ostModeMap[string("INTENSITY_FALL")] = INTENSITY_FALL;
+	ostModeMap[string("INTENSITY_BELOW_THRESH_NEG_SLOPE")] = INTENSITY_BELOW_THRESH_NEG_SLOPE;
 	ostModeMap[string("INTENSITY_RATIO_RISE")] = INTENSITY_RATIO_RISE;
 	ostModeMap[string("INTENSITY_RATIO_FALL_HOLD")] = INTENSITY_RATIO_FALL_HOLD;
+	ostModeMap[string("INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR")] = INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR;
+	ostModeMap[string("INTENSITY_AND_RATIO_ABOVE_THRESH")] = INTENSITY_AND_RATIO_ABOVE_THRESH;
 }
 
 /* Destructor */
@@ -96,10 +101,10 @@ void OST_TAB::reset() {
 
 
 
-void OST_TAB::readFromFile(const string ostFN, const int bVerbose) 
-	throw(ostFileReadingError, 
-	      unrecognizedOSTModeError, 
-		  ostFileSyntaxError) 
+void OST_TAB::readFromFile(const string ostFN, const int bVerbose)
+throw(ostFileReadingError,
+	unrecognizedOSTModeError,
+	ostFileSyntaxError)
 {
 	//FILE *fp;
 	int i0;
@@ -112,21 +117,21 @@ void OST_TAB::readFromFile(const string ostFN, const int bVerbose)
 
 	/* Trim lines; remove empty lines; remove commented lines */
 	list<string> ostLines_1;
-	for (list<string>::const_iterator lit = ostLines_0.begin(); 
-		 lit != ostLines_0.end(); ++lit) {
+	for (list<string>::const_iterator lit = ostLines_0.begin();
+		lit != ostLines_0.end(); ++lit) {
 		string t_str = trimString(*lit);
 
 		if (t_str.size() == 0) /* Skip empty lines */
 			continue;
 
-		if ( (t_str.size() > 0) && (t_str[0] == commentChar) ) /* Skip commented lines */
+		if ((t_str.size() > 0) && (t_str[0] == commentChar)) /* Skip commented lines */
 			continue;
 
 		ostLines_1.push_back(t_str);
 	}
 
 	/* Iterate through the lines */
-	/*for (list<string>::const_iterator lit = ostLines_1.begin(); 
+	/*for (list<string>::const_iterator lit = ostLines_1.begin();
 		 lit != ostLines_1.end(); ++lit) {
 		list<string> items = splitStringToList(*lit);
 	}*/
@@ -140,13 +145,17 @@ void OST_TAB::readFromFile(const string ostFN, const int bVerbose)
 		free(mode);
 		mode = NULL;
 	}
-	if (prm1) {		
+	if (prm1) {
 		free(prm1);
 		prm1 = NULL;
 	}
 	if (prm2) {
 		free(prm2);
 		prm2 = NULL;
+	}
+	if (prm3) {
+		free(prm3);
+		prm3 = NULL;
 	}
 	
 	if (maxIOICfg.stat0) {
@@ -209,11 +218,15 @@ void OST_TAB::readFromFile(const string ostFN, const int bVerbose)
 		printf("ERROR: failed to allocate memor for ostTab.prm2");
 		return;
 	}
+	if ((prm3 = (double*)calloc(n, sizeof(double))) == NULL) {
+		printf("ERROR: failed to allocate memory for ostTab.prm3");
+		return;
+	}
+
 	
 	for (i0 = 0; i0 < n; i0++) {
 		items = removeComments(splitStringToVector(*(++lit)), commentChar);
-		if ( (items.size() != 5) || 
-			 (items[4] != string("{}")) )
+		if (items.size() != 5)
 			throw ostFileSyntaxError(*lit);
 		stat0[i0] = atoi(items[0].c_str());
 
@@ -232,6 +245,7 @@ void OST_TAB::readFromFile(const string ostFN, const int bVerbose)
 
 		prm1[i0] = atof(items[2].c_str());
 		prm2[i0] = atof(items[3].c_str());
+		prm3[i0] = atof(items[4].c_str());
 	
 		if (bVerbose)
 			printf("\tSeg %d: stat0=%d; mode=%d; prm1=%f; prm2=%f\n", 
@@ -239,7 +253,7 @@ void OST_TAB::readFromFile(const string ostFN, const int bVerbose)
 	}
 
 	if ((statOnsetIndices = (int *) calloc(n * maxStatesPerLine, sizeof(int))) == NULL) {
-		printf("ERROR: failed to allocate memor for statOnsetIndices");
+		printf("ERROR: failed to allocate memory for statOnsetIndices");
 		return;
 	}
 
@@ -260,15 +274,15 @@ void OST_TAB::readFromFile(const string ostFN, const int bVerbose)
 			printf("ostTab.maxIOICfg.n = %d\n", maxIOICfg.n);
 
 		if ((maxIOICfg.stat0 = (int *)calloc(maxIOICfg.n, sizeof(int))) == NULL) {
-			printf("ERROR: failed to allocate memor for ostTab.maxIOICfg.stat0");
+			printf("ERROR: failed to allocate memory for ostTab.maxIOICfg.stat0");
 			return;
 		}
 		if ((maxIOICfg.maxInterval = (double *)calloc(maxIOICfg.n, sizeof(double))) == NULL) {
-			printf("ERROR: failed to allocate memor for ostTab.maxIOICfg.maxInterval");
+			printf("ERROR: failed to allocate memory for ostTab.maxIOICfg.maxInterval");
 			return;
 		}
 		if ((maxIOICfg.stat1 = (int *)calloc(maxIOICfg.n, sizeof(int))) == NULL) {
-			printf("ERROR: failed to allocate memor for ostTab.maxIOICfg.stat1");
+			printf("ERROR: failed to allocate memory for ostTab.maxIOICfg.stat1");
 			return;
 		}
 
@@ -359,7 +373,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				statOnsetIndices[stat_out] = frame_counter;
 			}
 		}
-		else if (t_mode == INTENSITY_RISE_HOLD) { // (+2) Crossing an rmsThresh (from below) and hold. prm1: rmsThresh; prm2: minHoldDur (s)			
+		else if (t_mode == INTENSITY_RISE_HOLD) { // (+2) RMS above a certain threshold for a certain duration. Does not consider slope. prm1: rmsThresh; prm2: minHoldDur (s)			
 			if (stat == t_stat0) {
 				if (rms_s > prm1[k]) {
 					stat_out = stat + 1;
@@ -384,7 +398,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			}
 
 		}
-		else if (t_mode == INTENSITY_RISE_HOLD_POS_SLOPE) { // (+2) Crossing an rmsThresh (from below) and hold, during positive RMS slopes. prm1: rmsThresh; prm2: minHoldDur (s)			
+		else if (t_mode == INTENSITY_RISE_HOLD_POS_SLOPE) { // (+2) RMS above a specified threshold for a certain duration, with positive RMS slope throughout. prm1: rmsThresh; prm2: minHoldDur (s)			
 			if (stat == t_stat0) {
 				if (rms_s > prm1[k] && 
 					rms_o_slp > 0) {
@@ -434,7 +448,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			}
 
 		}
-		else if (t_mode == NEG_INTENSITY_SLOPE_STRETCH_SPAN) { // Stretch of negative rms slope, with a stretch count thresold and a stretch span threshold
+		else if (t_mode == NEG_INTENSITY_SLOPE_STRETCH_SPAN) { // (+2) Stretch of negative rms slope, with a stretch count thresold and a stretch span threshold
 			if (stat == t_stat0) {
 				if (rms_o_slp < 0) {
 					stat_out = stat + 1;
@@ -460,7 +474,60 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			}
 
 		}
-		else if (t_mode == INTENSITY_FALL) { // (+1) Fall from a certain RMS threshold
+		else if (t_mode == INTENSITY_SLOPE_BELOW_THRESH) { // (+2) RMS slope below defined threshold for defined duration. prm1: rms_slope threshold; prm2: minDur (s)
+			if (stat == t_stat0) {
+				if (rms_o_slp < prm1[k]) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 1;
+				}
+			}
+			else {
+				minDurN = (int)floor(prm2[k] / frameDur + 0.5);
+
+				if (rms_o_slp < prm1[k]) {
+					stretchCnt++;
+
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+						lastStatEnd = data_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+
+		}
+		else if (t_mode == INTENSITY_SLOPE_ABOVE_THRESH) { // (+2) RMS slope above defined threshold for defined duration. prm1: rms_slope threshold; prm2: minDur (s)
+			if (stat == t_stat0) {
+				if (rms_o_slp > prm1[k]) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 1;
+				}
+			}
+			else {
+				minDurN = (int)floor(prm2[k] / frameDur + 0.5);
+
+				if (rms_o_slp > prm1[k]) {
+					stretchCnt++;
+
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+						lastStatEnd = data_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+
+		}
+
+		else if (t_mode == INTENSITY_FALL) { // (+2) RMS intensity below a threshold for a certain duration. prm1: RMS threshold; prm2: minDur (s)
 			minDurN = static_cast<int>(floor(prm2[k] / frameDur + 0.5));
 
 			bIsGOET = 0;
@@ -482,7 +549,34 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			}
 
 		}
-		else if (t_mode == INTENSITY_RATIO_RISE) { // (+2) RMS ratio cross, hold and fall. prm1: rms_ratio threshold; prm2: minDurN
+
+		else if (t_mode == INTENSITY_BELOW_THRESH_NEG_SLOPE) { // (+2) Stay below a certain RMS threshold for a certain duration, with (-) RMS slope throughout. prm1: RMS threshold; prm2: minDurN
+			if (stat == t_stat0) {
+				if ((rms_s < prm1[k]) && (rms_o_slp < 0)) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 1;
+				}
+			}
+			else {
+				minDurN = (int)floor(prm2[k] / frameDur + 0.5);
+
+				if ((rms_s < prm1[k]) && (rms_o_slp < 0)) {
+					stretchCnt++;
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+						lastStatEnd = data_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+
+		}
+
+		else if (t_mode == INTENSITY_RATIO_RISE) { // (+2) RMS ratio above threshold for specified duration. prm1: rms_ratio threshold; prm2: minDurN
 			if (stat == t_stat0) {
 				if (1. / rms_ratio > prm1[k]) {
 					stat_out = stat + 1;
@@ -512,7 +606,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				}
 			}			
 		}
-		else if (t_mode == INTENSITY_RATIO_FALL_HOLD) { // (+2) RMS ratio fall from a threshold, hold and fall. prm1: rms_ratio threshold; prm2: minDurN
+		else if (t_mode == INTENSITY_RATIO_FALL_HOLD) { // (+2) RMS ratio below a threshold for a specified duration. prm1: rms_ratio threshold; prm2: minDurN
 			if (stat == t_stat0) {
 				if (1. / rms_ratio < prm1[k]) {
 					stat_out = stat + 1;
@@ -542,6 +636,59 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				}
 			}
 		}
+
+		else if (t_mode == INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR) { // (+2) RMS ratio above threshold, with minimum RMS throughout. prm1: rms_ratio threshold; prm2: minDurN
+			if (stat == t_stat0) {
+				// If RMS intensity isn't above 0.0003, ignore the ratio as it's too noisy at low intensities
+				if ((1. / rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 0;
+				}
+			}
+			else if (stat - t_stat0 == 1) {
+				minDurN = (int)floor(prm2[k] / frameDur);
+
+				if ((1. / rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
+					stretchCnt++;
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+
+		}
+
+		else if (t_mode == INTENSITY_AND_RATIO_ABOVE_THRESH) { // (+2) RMS above threshold (prm1) and RMS Ratio above threshold (prm2) for specified duration. prm1: rms threshold; prms2: rms_ratio threshold; prm3: minHoldDur (s)			
+			if (stat == t_stat0) {
+				if ((rms_s > prm1[k]) && (1. / rms_ratio > prm2[k])) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 1;
+				}
+			}
+			else {
+				minDurN = (int)floor(prm3[k] / frameDur + 0.5);
+
+				if ((rms_s > prm1[k]) && (1. / rms_ratio > prm2[k])) {
+					stretchCnt++;
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+						lastStatEnd = data_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+
+		}
+
 			 
 	}
 
