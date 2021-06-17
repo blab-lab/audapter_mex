@@ -2272,7 +2272,8 @@ int Audapter::handleBufferWavePB(dtype *inFrame_ptr, dtype *outFrame_ptr, int fr
 	int n;
 
 	for(n=0;n<frame_size;n++){
-		outFrame_ptr[n]=data_pb[pbCounter];
+		//outFrame_ptr[n]=data_pb[pbCounter];
+		outFrame_ptr[2 * n] = outFrame_ptr[2 * n + 1] = data_pb[pbCounter];
 		pbCounter=pbCounter+1;
 		if (pbCounter==maxPBSize){
 			pbCounter=0;
