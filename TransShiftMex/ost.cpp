@@ -41,15 +41,15 @@ OST_TAB::OST_TAB() {
 	ostModeMap[string("INTENSITY_RISE_HOLD_POS_SLOPE")] = INTENSITY_RISE_HOLD_POS_SLOPE;
 	ostModeMap[string("POS_INTENSITY_SLOPE_STRETCH")] = POS_INTENSITY_SLOPE_STRETCH;
 	ostModeMap[string("NEG_INTENSITY_SLOPE_STRETCH_SPAN")] = NEG_INTENSITY_SLOPE_STRETCH_SPAN;
-  ostModeMap[string("INTENSITY_SLOPE_BELOW_THRESH")] = INTENSITY_SLOPE_BELOW_THRESH;	// CWN add-on: basic
-  ostModeMap[string("INTENSITY_SLOPE_ABOVE_THRESH")] = INTENSITY_SLOPE_ABOVE_THRESH;  // CWN add-on: basic
-  ostModeMap[string("INTENSITY_FALL")] = INTENSITY_FALL;
-  ostModeMap[string("INTENSITY_BELOW_THRESH_NEG_SLOPE")] = INTENSITY_BELOW_THRESH_NEG_SLOPE;  // CWN add-on: basic
+	ostModeMap[string("INTENSITY_SLOPE_BELOW_THRESH")] = INTENSITY_SLOPE_BELOW_THRESH;	// CWN add-on: basic
+	ostModeMap[string("INTENSITY_SLOPE_ABOVE_THRESH")] = INTENSITY_SLOPE_ABOVE_THRESH;  // CWN add-on: basic
+	ostModeMap[string("INTENSITY_FALL")] = INTENSITY_FALL;
+	ostModeMap[string("INTENSITY_BELOW_THRESH_NEG_SLOPE")] = INTENSITY_BELOW_THRESH_NEG_SLOPE;  // CWN add-on: basic
 	ostModeMap[string("INTENSITY_RATIO_RISE")] = INTENSITY_RATIO_RISE;
 	ostModeMap[string("INTENSITY_RATIO_FALL_HOLD")] = INTENSITY_RATIO_FALL_HOLD;
-  ostModeMap[string("INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR")] = INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR;  // CWN add-on: basic
-	ostModeMap[string("INTENSITY_AND_RATIO_ABOVE_THRESH")] = INTENSITY_AND_RATIO_ABOVE_THRESH;  // CWN add-on: basic
 	ostModeMap[string("INTENSITY_RATIO_BELOW_THRESH_NEG_SLOPE")] = INTENSITY_RATIO_BELOW_THRESH_NEG_SLOPE;	// CWN add-on: rmsRatio
+	ostModeMap[string("INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR")] = INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR;  // CWN add-on: basic
+	ostModeMap[string("INTENSITY_AND_RATIO_ABOVE_THRESH")] = INTENSITY_AND_RATIO_ABOVE_THRESH;  // CWN add-on: basic
 	ostModeMap[string("INTENSITY_RATIO_SLOPE_ABOVE_THRESH")] = INTENSITY_RATIO_SLOPE_ABOVE_THRESH;	// CWN add-on: rmsRatio
 	ostModeMap[string("INTENSITY_RATIO_SLOPE_BELOW_THRESH")] = INTENSITY_RATIO_SLOPE_BELOW_THRESH;	// CWN add-on: rmsRatio
 }
@@ -385,7 +385,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				}
 			}
 			else {
-				minDurN = (int) floor(prm2[k] / frameDur + 0.5);
+				minDurN = (int)floor(prm2[k] / frameDur + 0.5);
 
 				if (rms_s > prm1[k]) {
 					stretchCnt++;
@@ -403,7 +403,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 		}
 		else if (t_mode == INTENSITY_RISE_HOLD_POS_SLOPE) { // (+2) RMS above a specified threshold for a certain duration, with positive RMS slope throughout. prm1: rmsThresh; prm2: minHoldDur (s)			
 			if (stat == t_stat0) {
-				if (rms_s > prm1[k] && 
+				if (rms_s > prm1[k] &&
 					rms_o_slp > 0) {
 					stat_out = stat + 1;
 					statOnsetIndices[stat_out] = frame_counter;
@@ -411,7 +411,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				}
 			}
 			else {
-				minDurN = (int) floor(prm2[k] / frameDur + 0.5);
+				minDurN = (int)floor(prm2[k] / frameDur + 0.5);
 
 				if (rms_s > prm1[k] &&
 					rms_o_slp > 0) {
@@ -531,7 +531,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 
 		}
 
-		
+
 		else if (t_mode == INTENSITY_FALL) { // (+2) Stay below a certain threshold for a certain duration
 			minDurN = static_cast<int>(floor(prm2[k] / frameDur + 0.5));
 
@@ -608,7 +608,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 					statOnsetIndices[stat_out] = frame_counter;
 					lastStatEnd = data_counter;
 				}
-			}			
+			}
 		}
 		else if (t_mode == INTENSITY_RATIO_FALL_HOLD) { // (+2) RMS ratio below a threshold for a specified duration. prm1: rms_ratio threshold; prm2: minDurN
 			if (stat == t_stat0) {
@@ -715,11 +715,11 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				minDurN = (int)floor(prm2[k] / frameDur);
 
 				if ((1. / rms_ratio > prm1[k]) && (rms_s >= 0.0003)) {
-          stretchCnt++;
+					stretchCnt++;
 					if (stretchCnt > minDurN) {
 						stat_out = stat + 1;
 						statOnsetIndices[stat_out] = frame_counter;
-            	}
+					}
 				}
 				else {
 					stat_out = stat - 1;
@@ -727,7 +727,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 			}
 
 		}
-    
+
 		else if (t_mode == INTENSITY_AND_RATIO_ABOVE_THRESH) { // (+2) Above RMS threshold and RMS Ratio threshold for specified duration. prm1: rmsThresh; prms2: rms_ratio threshold; prm3: minHoldDur (s)			
 			if (stat == t_stat0) {
 				if ((rms_s > prm1[k]) && (rms_ratio > prm2[k])) {
@@ -740,12 +740,12 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				minDurN = (int)floor(prm3[k] / frameDur + 0.5);
 
 				if ((rms_s > prm1[k]) && (rms_ratio > prm2[k])) {
-          stretchCnt++;
+					stretchCnt++;
 					if (stretchCnt > minDurN) {
 						stat_out = stat + 1;
 						statOnsetIndices[stat_out] = frame_counter;
-            lastStatEnd = data_counter;
-            	}
+						lastStatEnd = data_counter;
+					}
 				}
 				else {
 					stat_out = stat - 1;
@@ -754,7 +754,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 
 		}
 
-    else if (t_mode == INTENSITY_RATIO_SLOPE_ABOVE_THRESH) { // (+2) Above RMS ratio slope threshold for specified duration. prm1: rmsRatioSlope threshold; prms2: minHoldDur (s);			
+		else if (t_mode == INTENSITY_RATIO_SLOPE_ABOVE_THRESH) { // (+2) Above RMS ratio slope threshold for specified duration. prm1: rmsRatioSlope threshold; prms2: minHoldDur (s);			
 			if (stat == t_stat0) {
 				if (rms_ratio_slp > prm1[k]) {
 					stat_out = stat + 1;
@@ -784,17 +784,17 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 		else if (t_mode == INTENSITY_AND_RATIO_ABOVE_THRESH) { // (+2) RMS above threshold (prm1) and RMS Ratio above threshold (prm2) for specified duration. prm1: rms threshold; prms2: rms_ratio threshold; prm3: minHoldDur (s)			
 			if (stat == t_stat0) {
 				if ((rms_s > prm1[k]) && (1. / rms_ratio > prm2[k])) {
-          stat_out = stat + 1;
+					stat_out = stat + 1;
 					statOnsetIndices[stat_out] = frame_counter;
 					stretchCnt = 1;
 				}
 			}
 			else {
-        minDurN = (int)floor(prm3[k] / frameDur + 0.5);
+				minDurN = (int)floor(prm3[k] / frameDur + 0.5);
 
 				if ((rms_s > prm1[k]) && (1. / rms_ratio > prm2[k])) {
 					stretchCnt++;
-          if (stretchCnt > minDurN) {
+					if (stretchCnt > minDurN) {
 						stat_out = stat + 1;
 						statOnsetIndices[stat_out] = frame_counter;
 						lastStatEnd = data_counter;
@@ -810,17 +810,17 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 		else if (t_mode == INTENSITY_RATIO_SLOPE_BELOW_THRESH) { // (+2) Below RMS ratio slope threshold for specified duration. prm1: rmsRatioSlope threshold; prms2: minHoldDur (s);			
 			if (stat == t_stat0) {
 				if (rms_ratio_slp < prm1[k]) {
-          stat_out = stat + 1;
+					stat_out = stat + 1;
 					statOnsetIndices[stat_out] = frame_counter;
 					stretchCnt = 1;
 				}
 			}
 			else {
-        minDurN = (int)floor(prm2[k] / frameDur + 0.5);
+				minDurN = (int)floor(prm2[k] / frameDur + 0.5);
 
 				if (rms_ratio_slp < prm1[k]) {
 					stretchCnt++;
-          if (stretchCnt > minDurN) {
+					if (stretchCnt > minDurN) {
 						stat_out = stat + 1;
 						statOnsetIndices[stat_out] = frame_counter;
 						lastStatEnd = data_counter;
@@ -835,7 +835,7 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 
 
 
-			 
+
 	}
 
 	/* Process maxIOICfg */
