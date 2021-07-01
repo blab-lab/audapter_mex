@@ -582,6 +582,8 @@ void Audapter::reset()
 	for (j0 = 0; j0 < maxDataSize; j0++) {
 		a_rms_o[j0] = 0;
 		a_rms_o_slp[j0] = 0;
+		rms_ratio[j0] = 0;
+		rms_ratio_slp[j0] = 0;
 	}
 
 	// Initialize variables used in the pitch shifting algorithm 
@@ -1547,7 +1549,7 @@ const dtype* Audapter::getSignal(int & size) const {
 
 const dtype* Audapter::getData(int & size, int & vecsize) const {
 	size = data_counter;
-	vecsize = 4 +2 * p.nTracks + 2 * 2 + p.nLPC + 8;
+	vecsize = 4 +2 * p.nTracks + 2 * 2 + p.nLPC + 10; // CWN changed last value from 8 -> 10
 	return data_recorder[0];
 }
 
@@ -1664,16 +1666,16 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 		rms_fb = calcRMS_fb(oBuf + (p.nDelay - 1) * p.frameLen + si,
                             p.frameShift, rms_s > p.dRMSThresh); // Smoothed RMS of original signal
 
-		rms_ratio = rms_s / rms_p; // rmsratio indicates if there is a fricative around here...	
+		rms_ratio[data_counter] = rms_p / rms_s; // Higher rms_ratio is associated with fricatives, because there is relatively more high-frequency (pre-emphasis (rms_p)) sound
 
 		//SC-Mod(2008/01/11)		
-		//SC Notice that the identification of a voiced frame requires, 1) RMS of the orignal signal is large enough,
-		//SC	2) RMS ratio between the orignal and preemphasized signals is large enough
+		//SC Notice that the identification of a voiced frame requires, 1) RMS of the original signal is large enough,
+		//SC	2) RMS ratio is low enough
 		if (rms_s >= p.dRMSThresh * 2) {			
-			above_rms = isabove(rms_s, p.dRMSThresh) && isabove(rms_ratio, p.dRMSRatioThresh / 1.3);
+			above_rms = isabove(rms_s, p.dRMSThresh) && !isabove(rms_ratio[data_counter], p.dRMSRatioThresh * 1.3);
 		}
 		else{
-			above_rms = isabove(rms_s, p.dRMSThresh) && isabove(rms_ratio, p.dRMSRatioThresh);
+			above_rms = isabove(rms_s, p.dRMSThresh) && !isabove(rms_ratio[data_counter], p.dRMSRatioThresh);
 		}
 
 		if (above_rms) {
@@ -1739,7 +1741,8 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
                               frame_counter, 
                               static_cast<double>(a_rms_o[data_counter]),
                               static_cast<double>(a_rms_o_slp[data_counter]),
-                              static_cast<double>(rms_ratio),
+                              static_cast<double>(rms_ratio[data_counter]),
+						      static_cast<double>(rms_ratio_slp[data_counter]),
                               data_recorder[1], 
                               static_cast<double>(p.frameLen) / static_cast<double>(p.sr));
 		
@@ -1860,6 +1863,14 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 		data_recorder[offs][data_counter] = a_rms_o_slp[data_counter];
 
 		offs += 1;
+
+		//CWN Write rms_ratio and rms_ratio_slp (RMS ratio slope) to data_recorder
+		data_recorder[offs][data_counter] = rms_ratio[data_counter];
+		data_recorder[offs + 1][data_counter] = rms_ratio_slp[data_counter];
+		
+		offs += 2;
+
+		// Write OST statuses to data_recorder
 		data_recorder[offs][data_counter] = stat;
 	}
 	
@@ -2925,6 +2936,7 @@ void Audapter::writeSignalsToWavFile() {
 
 
 void Audapter::calcRMSSlope() {
+	// Calculating RMS slope (a_rms_o_slp)
 	int i0;
 	dtype nom = 0, den = 0;
 	dtype mn_x = (rmsSlopeN - 1) / 2;
@@ -2944,9 +2956,32 @@ void Audapter::calcRMSSlope() {
 			den += (i0 - mn_x) * (i0 - mn_x);
 			nom += (i0 - mn_x) * (a_rms_o[data_counter - rmsSlopeN + 1 + i0] - mn_y);
 		}
+		a_rms_o_slp[data_counter] = nom / den / (p.frameLen / static_cast<dtype>(p.sr));
 	}
 
-    a_rms_o_slp[data_counter] = nom / den / (p.frameLen / static_cast<dtype>(p.sr));
+
+	// Calculating RMS ratio slope (rms_ratio_slp)
+	nom = 0, den = 0, mn_x = (rmsSlopeN - 1) / 2, mn_y = 0; // reset for rms_ratio_slp calculations
+
+	if (data_counter < rmsSlopeN - 1) {
+		rms_ratio_slp[data_counter] = 0;
+	}
+	else {
+		// Calculate mean y (mean rms ratio slope)
+		for (i0 = 0; i0 < rmsSlopeN; i0++) {
+			mn_y += rms_ratio[data_counter - rmsSlopeN + 1 + i0];
+		}
+		mn_y /= rmsSlopeN;
+
+		for (i0 = 0; i0 < rmsSlopeN; i0++) {
+			den += (i0 - mn_x) * (i0 - mn_x);
+			nom += (i0 - mn_x) * (rms_ratio[data_counter - rmsSlopeN + 1 + i0] - mn_y);
+		}
+	}
+	
+	rms_ratio_slp[data_counter] = nom / den / (p.frameLen / static_cast<dtype>(p.sr));
+
+	
 }
 
 

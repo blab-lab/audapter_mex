@@ -29,20 +29,23 @@ private:
 
 	/* OST heuristic modes */
 	typedef enum {
-		OST_END = 0, 
-		ELAPSED_TIME = 1, 
-		INTENSITY_RISE_HOLD = 5, 
-		INTENSITY_RISE_HOLD_POS_SLOPE = 6, 
-		POS_INTENSITY_SLOPE_STRETCH = 10, 
-		NEG_INTENSITY_SLOPE_STRETCH_SPAN = 11, 
-		INTENSITY_SLOPE_BELOW_THRESH = 12,
-		INTENSITY_SLOPE_ABOVE_THRESH = 13,
-		INTENSITY_FALL = 20, 
-		INTENSITY_BELOW_THRESH_NEG_SLOPE = 21,
+		OST_END = 0,
+		ELAPSED_TIME = 1,
+		INTENSITY_RISE_HOLD = 5,
+		INTENSITY_RISE_HOLD_POS_SLOPE = 6,
+		POS_INTENSITY_SLOPE_STRETCH = 10,
+		NEG_INTENSITY_SLOPE_STRETCH_SPAN = 11,
+    INTENSITY_SLOPE_BELOW_THRESH = 12,  // CWN add-on: basic
+    INTENSITY_SLOPE_ABOVE_THRESH = 13,  // CWN add-on: basic
+		INTENSITY_FALL = 20,
+		INTENSITY_BELOW_THRESH_NEG_SLOPE = 21,	// CWN add-on: basic
 		INTENSITY_RATIO_RISE = 30, 
 		INTENSITY_RATIO_FALL_HOLD = 31,
-		INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR = 32,
-		INTENSITY_AND_RATIO_ABOVE_THRESH = 40,
+		INTENSITY_RATIO_BELOW_THRESH_NEG_SLOPE = 32, // CWN add-on: rmsRatio
+		INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR = 33, //CWN add-on: basic
+		INTENSITY_AND_RATIO_ABOVE_THRESH = 40, // CWN add-on: basic
+		INTENSITY_RATIO_SLOPE_ABOVE_THRESH = 50,	// CWN add-on: rmsRatio
+		INTENSITY_RATIO_SLOPE_BELOW_THRESH = 55		// CWN add-on: rmsRatio
 	} OST_MODE_NAME;
 
 	std::map<std::string, int> ostModeMap;
@@ -102,8 +105,8 @@ public:
 
 	/* Main function: online status tracking */
 	int osTrack(const int stat, const int data_counter, const int frame_counter, 
-		     	const double rms_s, const double rms_o_slp, const double rms_ratio, const double *rms_rec, 
-				const double frameDur);
+		     	const double rms_s, const double rms_o_slp, const double rms_ratio, 
+				const double rms_ratio_slp, const double *rms_rec, const double frameDur);
 
 	/* Reset status */
 	void reset();

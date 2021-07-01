@@ -161,7 +161,7 @@ private:
 	static const int max_nFFT = 4096;
 
 	/* Data recorder */
-	static const int maxDataVec = 2 * maxNTracks + 10 + maxNLPC + 5;
+	static const int maxDataVec = 2 * maxNTracks + 10 + maxNLPC + 7; // CWN +2 for rms_ratio and rms_ratio_slp
 	static const int maxRecSize = 230400;
     static const int maxDataSize = 230400;
 	
@@ -310,8 +310,10 @@ private:
 	dtype data_recorder[maxDataVec][maxDataSize];		// stores other data
 	dtype transdata[2];								// only transition data
 
-	dtype a_rms_o[maxDataSize];
-	dtype a_rms_o_slp[maxDataSize];
+	dtype a_rms_o[maxDataSize];						// RMS intensity values
+	dtype a_rms_o_slp[maxDataSize];					// RMS intensity -- slope
+	dtype rms_ratio[maxDataSize];					// RMS ratio between high and low freq.
+	dtype rms_ratio_slp[maxDataSize];				// RMS ratio between high and low freq. -- slope
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   DATA PLAYBACK     **************************************************************
 	//SC-Mod(2007/12/28)
@@ -327,8 +329,6 @@ private:
 
 	//SC(2012/02/29) For data writing:
 	int dataFileCnt;
-
-	dtype rms_ratio;
 
 	//SCai(2012/10/19) PIP intensity shift
 	dtype intShiftRatio;
