@@ -1666,16 +1666,18 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 		rms_fb = calcRMS_fb(oBuf + (p.nDelay - 1) * p.frameLen + si,
                             p.frameShift, rms_s > p.dRMSThresh); // Smoothed RMS of original signal
 
-		rms_ratio[data_counter] = rms_p / rms_s; // Higher rms_ratio is associated with fricatives, because there is relatively more high-frequency (pre-emphasis (rms_p)) sound
+		rms_ratio[data_counter] = rms_p / rms_s; // Higher rms_ratio is associated with fricatives, because there is relatively more high-frequency (pre-emphasis, rms_p) sound
 
 		//SC-Mod(2008/01/11)		
-		//SC Notice that the identification of a voiced frame requires, 1) RMS of the original signal is large enough,
-		//SC	2) RMS ratio is low enough
+		//SC The identification of a voiced frame requires, 1) RMS of the original signal is large enough,
+		//SC	2) RMS ratio is low enough, i.e., there is not much high-frequency energy
+		// 
+		// CWN 2021 For comptability reasons with legacy versions, the rms_ratio variable is inverted.
 		if (rms_s >= p.dRMSThresh * 2) {			
-			above_rms = isabove(rms_s, p.dRMSThresh) && !isabove(rms_ratio[data_counter], p.dRMSRatioThresh * 1.3);
+			above_rms = isabove(rms_s, p.dRMSThresh) && isabove(1. / rms_ratio[data_counter], p.dRMSRatioThresh * 1.3);
 		}
 		else{
-			above_rms = isabove(rms_s, p.dRMSThresh) && !isabove(rms_ratio[data_counter], p.dRMSRatioThresh);
+			above_rms = isabove(rms_s, p.dRMSThresh) && isabove(1. / rms_ratio[data_counter], p.dRMSRatioThresh);
 		}
 
 		if (above_rms) {
