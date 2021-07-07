@@ -467,6 +467,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 			devpar.chans = 1;
 			audio_obj.setdevparams(&devpar,1);
 			devpar.num = activeDeviceNum;
+			devpar.chans = 2; // added for stereo output
 			audio_obj.setdevparams(&devpar,2);
 
 			if (!started) {
