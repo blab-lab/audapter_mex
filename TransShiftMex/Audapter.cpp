@@ -136,6 +136,7 @@ Audapter::Audapter() :
 	params.addBoolParam("bdownsampfilt", "Down-sampling filter switch");
 	params.addBoolParam("mute", "Global mute switch");
 	params.addBoolParam("bpvocmpnorm", "Phase vocoder amplitude normalization switch");
+	params.addBoolParam("bclampformants", "Switch for using clamped formants passed in from Matlab");	// taimComp
 
 	/* Integer parameters */
 	params.addIntParam("srate", "Sampling rate (Hz), after downsampling");
@@ -159,6 +160,7 @@ Audapter::Audapter() :
 	/* Integer array parameters */
 	params.addIntArrayParam("pvocampnormtrans", "Phase vocoder amplitude normalization transitional period length (frames)");
 	params.addIntArrayParam("delayframes",	"DAF global delay (frames): maxNVoices-long array");
+	params.addIntArrayParam("clamposts", "OST values to start [0] and stop [1] using clamped formant values");	// taimComp
 
 	/* Double parameters */
 	params.addDoubleParam("scale", "Output scaling factor (gain)");
@@ -211,6 +213,8 @@ Audapter::Audapter() :
 	params.addDoubleArrayParam("tsgtoneamp", "Tone sequence generator: tone peak amplitudes");
 	params.addDoubleArrayParam("tsgtoneramp", "Tone sequence generator: tone ramp durations (s)");
 	params.addDoubleArrayParam("tsgint", "Tone sequence generator: intervals between tone onsets (s)");
+	params.addDoubleArrayParam("clampf1", "F1 values used during clamped signal output");		// taimComp
+	params.addDoubleArrayParam("clampf2", "F2 values used during clamped signal output");		// taimComp
 
 	/* Double 2D array parameters */
 	params.addDouble2DArrayParam("pertamp2d", "Formant perturbation field: Perturbation vector amplitude for F1-F2");
