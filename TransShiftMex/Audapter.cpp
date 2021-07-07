@@ -421,6 +421,14 @@ Audapter::Audapter() :
 	amp_ratio = 1.0;
 	amp_ratio_prev = 1.0;
 
+	// taimComp
+	p.bClampFormants = 0;	// use clamped formants piped in from MATLAB as opposed to Audapter-calculated formants
+	for (n = 0; n < maxNClampFrames; n++) {
+		p.clamp_f1[n] = 0;
+		p.clamp_f2[n] = 0;
+	}
+	p.clamp_osts[0] = 0; p.clamp_osts[1] = 0;
+
 	/* Initialize formant tracker */
 	try {
 		// TODO(cais): Deduplicate.
@@ -1123,6 +1131,33 @@ void *Audapter::setGetParam(bool bSet,
 	else if (ns == string("fb2gain")) {
 		ptr = (void *)&p.fb2Gain;
 	}
+	else if (ns == string("bclampformants")) {		// taimComp
+		ptr = (void*)&p.bClampFormants;
+	}
+	else if (ns == string("clampf1")) {		// taimComp
+		ptr = (void*)p.clamp_f1;
+
+		if (bSet && (nPars > maxNClampFrames))
+			mexErrMsgTxt("Clamped F1 value array is too long");
+		
+			// this reads: "if nPars is less than maxNClampFrames, len = nPars. Else, len = maxNClampFrames".
+		//len = (nPars < maxNClampFrames) ? nPars : maxNClampFrames;	// TODO this should work, but nPars is 0 on subsequent loops (including each trial) after initializing
+		len = maxNClampFrames;
+
+	}
+	else if (ns == string("clampf2")) {		// taimComp
+		ptr = (void*)p.clamp_f2;
+
+		if (bSet && (nPars > maxNClampFrames))
+			mexErrMsgTxt("Clamped F2 value array is too long");
+
+		//len = (nPars < maxNClampFrames) ? nPars : maxNClampFrames;	// TODO this should work, but nPars is 0 on subsequent loops (including each trial) after initializing
+		len = maxNClampFrames;
+	}
+	else if (ns == string("clamposts")) {	// taimComp
+		ptr = (void*)p.clamp_osts;
+		len = 2;
+	}
 	else {		
 		string errStr("Unknown parameter name: ");
 		errStr += string(name);
@@ -1165,6 +1200,11 @@ void *Audapter::setGetParam(bool bSet,
 				for (int i = len; i < maxPBSize; i++)
 					*((dtype*)ptr + i) = 0.0;
 			}
+			// This doesn't work for some reason if clamp_f1/2 aren't pfNPoints in length
+			//else if (ns == string("clampf1") || ns == string("clampf2")) { /* Zero out the remaining part */	// taimComp
+			//	for (int i = len; i < maxNClampFrames; i++)
+			//		*((dtype*)ptr + i) = 0.0;
+			//}
 		}
 		else if (pType == Parameter::TYPE_DOUBLE_2DARRAY) {
 			for (int i = 0; i < len; i++) {
@@ -1592,6 +1632,7 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 	dtype outputBuf[maxFrameLen];
 
 	static dtype time_elapsed=0;
+	static int	clampIx = 0;
 
 	int fi=0, si=0, i0=0, offs=0, quit_hqr=0, indx=0, nZC=0, nZCp=0;	
 	dtype rms_s, rms_p, rms_o, rms_fb, wei;
@@ -1751,7 +1792,19 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 				during_trans = (pertCfg.fmtPertAmp[stat] != 0);
 			}
 
-			if (during_trans && above_rms) {  // Determine whether the current point in perturbation field
+			if (p.bClampFormants && stat >= p.clamp_osts[0] && stat < p.clamp_osts[1] && p.clamp_f1[clampIx] != 0) {		// taimComp
+				newPhis[0] = p.clamp_f1[clampIx] * 2 * M_PI / p.sr;	// This gets converted back to Hz when sFmts is set
+				newPhis[1] = p.clamp_f2[clampIx] * 2 * M_PI / p.sr;
+				during_trans = true;	// TODO(CWN) this is relatively hacky. Should probably just have some way to circumvent during_trans check in L1868
+				if ((clampIx < maxNClampFrames-2) && (p.clamp_f1[clampIx+1] != 0)) {
+					clampIx += 1;
+				}
+				else {
+					// don't increment clampIx. Thus, the final frame will be repeated indefinitely 'til clamp_osts[1] is reached
+				}
+					
+			}
+			else if (during_trans && above_rms) {  // Determine whether the current point in perturbation field
 			    // yes : windowed deviation over x coordinate
 				//loc = locateF2(f2mp);	// Interpolation (linear)								
                 //locint = static_cast<int>(floor(loc));
@@ -1801,6 +1854,7 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 			}
 			else {
                 // no : no force applied
+				clampIx = 0;
 				maintain_trans=false;
 				during_trans=false;	
 				newPhis[0]=wmaPhis[0];	// No shifting
