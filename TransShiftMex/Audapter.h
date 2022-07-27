@@ -521,7 +521,7 @@ private:
 		int clamp_osts[2];			// ix [0] is the OST status which signals, start using clamped formants. ix [1] is OST to stop clamping. // taimComp
 		dtype clamp_f1[maxNClampFrames];	// taimComp
 		dtype clamp_f2[maxNClampFrames];	// taimComp
-		
+
 	} p;
 
 
