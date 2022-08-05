@@ -1,16 +1,18 @@
 # Audapter C++ MEX Code
 Audapter: Real-time speech signal perturbation (formant frequencies, pitch, timing and intensity). This is the MEX core of the MATLAB package.
 
-## Download compiled binary
+## Setting up Audapter
+If you only want to RUN Audapter, the .mex file is the only file you need. Just put it somewhere on your Matlab path. See the ["Releases" section of the GitHub page](https://github.com/blab-lab/audapter_mex/releases) for the compiled .mex file.
 
-The following versions of pre-compiled mexw64 files are available
+If you want to MAKE PROGRAMMATIC CHANGES to Audapter, you can download this whole repository and work with the C++ code.
 
-- [2.1.5 (Latest)](./bin/2.1.5/Audapter.mexw64)
 
-See also:
+## Resources
 * [Audapter Manual](http://scai.io/AudapterManual.pdf) for build instructions and further information
-* Audapter MATLAB Code: https://github.com/shanqing-cai/audapter_matlab
+* SEE ALSO: [Audapter: Beyond the Manual](https://kb.wisc.edu/smng/110902) for functionality specific to the blab-lab fork
+* Audapter MATLAB Code: https://github.com/blab-lab/audapter_matlab
    
+## Acknowledgements
 The following individuals participated in the writing of Audapter (in alphabetical order of last name):
 * Marc Boucek
 * Shanqing Cai
@@ -21,3 +23,5 @@ The following individuals participated in the writing of Audapter (in alphabetic
 The current maintainer of this project is:
 * Shanqing Cai
     
+The blab-lab/audapter_mex fork of Shanqing's Audapter contains additional programming by:
+* Chris Naber
