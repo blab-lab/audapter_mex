@@ -169,6 +169,9 @@ private:
 	static const int pfNPoints = 257;	/* Number of points in the perturbation field */
 	static const int pfNBit = 8;
 
+	/* Formant clamping (taimComp)*/
+	static const int maxNClampFrames = 2048; /* Number of frames a clamp can persist */
+
 	/* Waveform player */
 	static const int maxPBSize = 230400;			/* Maximum length (samples) for waveform playback */
 
@@ -512,6 +515,13 @@ private:
 
 		int bPvocAmpNorm;	/* Pitch vocoder amplitude normalization */		
 		int pvocAmpNormTrans; /* Length of the amplitude normalization factor transitional period */
+
+		/* CWN 2020 formant clamping*/
+		int	bClampFormants;			// use clamped formants piped in from MATLAB as opposed to Audapter-calculated formants // taimComp
+		int clamp_osts[2];			// ix [0] is the OST status which signals, start using clamped formants. ix [1] is OST to stop clamping. // taimComp
+		dtype clamp_f1[maxNClampFrames];	// taimComp
+		dtype clamp_f2[maxNClampFrames];	// taimComp
+
 	} p;
 
 
