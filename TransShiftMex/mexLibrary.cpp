@@ -638,7 +638,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 			break;
 
         case 999:
-            mexPrintf("Audapter version %s\n", audapter::Version::version);
+            mexPrintf("blab-lab fork: Audapter version b2.2. \n");
             break;
 
 		default:
