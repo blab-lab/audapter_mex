@@ -49,6 +49,7 @@ OST_TAB::OST_TAB() {
 	ostModeMap[string("INTENSITY_RATIO_FALL_HOLD")] = INTENSITY_RATIO_FALL_HOLD;
 	ostModeMap[string("INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR")] = INTENSITY_RATIO_ABOVE_THRESH_WITH_RMS_FLOOR;
 	ostModeMap[string("INTENSITY_AND_RATIO_ABOVE_THRESH")] = INTENSITY_AND_RATIO_ABOVE_THRESH;
+	ostModeMap[string("INTENSITY_AND_RATIO_BELOW_THRESH")] = INTENSITY_AND_RATIO_BELOW_THRESH;
 }
 
 /* Destructor */
@@ -675,6 +676,32 @@ int OST_TAB::osTrack(const int stat, const int data_counter, const int frame_cou
 				minDurN = (int)floor(prm3[k] / frameDur + 0.5);
 
 				if ((rms_s > prm1[k]) && (1. / rms_ratio > prm2[k])) {
+					stretchCnt++;
+					if (stretchCnt > minDurN) {
+						stat_out = stat + 1;
+						statOnsetIndices[stat_out] = frame_counter;
+						lastStatEnd = data_counter;
+					}
+				}
+				else {
+					stat_out = stat - 1;
+				}
+			}
+
+		}
+
+		else if (t_mode == INTENSITY_AND_RATIO_BELOW_THRESH) { // (+2) RMS below threshold (prm1) and RMS Ratio below threshold (prm2) for specified duration. prm1: rms threshold; prms2: rms_ratio threshold; prm3: minHoldDur (s)			
+			if (stat == t_stat0) {
+				if ((rms_s < prm1[k]) && (1. / rms_ratio < prm2[k])) {
+					stat_out = stat + 1;
+					statOnsetIndices[stat_out] = frame_counter;
+					stretchCnt = 1;
+				}
+			}
+			else {
+				minDurN = (int)floor(prm3[k] / frameDur + 0.5);
+
+				if ((rms_s < prm1[k]) && (1. / rms_ratio < prm2[k])) {
 					stretchCnt++;
 					if (stretchCnt > minDurN) {
 						stat_out = stat + 1;
