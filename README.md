@@ -9,7 +9,7 @@ If you just want to run Audapter, the compiled .mex file is the only thing from 
 
 ### Optional but recommended setup
 1. In your MATLAB path, move the commonmcode folder to the bottom. This will preserve the MATLAB default spectrogram color settings
-2. If you are using a Focusrite device for recording, such as a Focusrite Scarlett 2i2 (any generation), only certain driver versions will work. **You must use version 4.65.5** on Windows 10 or 11. More recent Focusrite driver versions cause Audapter to crash when it tries to take control of the device, (ie, when it `'Start'`s). Download driver versions from [Focusrite's website](https://downloads.focusrite.com/focusrite).
+2. If you are using a Focusrite device for recording, such as a Focusrite Scarlett 2i2, Generation 4 devices are not supported. Generation 1, 2, and 3 devices are supported. Additionally, you must use the Focusrite driver version 4.65.5. This driver works on all Windows operating system versions. Newer Focusrite drivers cause MATLAB to crash when Audapter tries to take control of the device, (ie, when it `'Start'`s). Download drivers from [Focusrite's website](https://downloads.focusrite.com/focusrite).
 3. The Audapter built-in demos (such as `audapterDemo_online.m`) assume you are using a Focusrite device. If you are using a different device, you will need to edit the command `Audapter('deviceName', ...)`. For MOTU devices, the device name will be 'MOTU MicroBook'. 
 
 ### Troubleshooting
