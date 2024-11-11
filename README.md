@@ -22,7 +22,7 @@ Audapter('deviceName', 'Focusrite USB');
 p = getAudapterDefaultParams('male');
 AudapterIO('init', p)
 Audapter('start')
-Audapter('stop')You don't need to change
+Audapter('stop')
 ```
 
 ## Resources
