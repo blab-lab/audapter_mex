@@ -1,5 +1,5 @@
 #include "version.h"
 
 namespace audapter {
-    const std::string Version::version("2.1.5"); // doesn't work. Update mexLibrary.cpp case 999 instead
+    const std::string Version::version("blab-lab fork: Audapter version b2.4"); 
 };
