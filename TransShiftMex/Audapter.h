@@ -162,8 +162,8 @@ private:
 
 	/* Data recorder */
 	static const int maxDataVec = 2 * maxNTracks + 10 + maxNLPC + 5;
-	static const int maxRecSize = 230400;
-    static const int maxDataSize = 230400;
+	static const int maxRecSize = 480000;
+    static const int maxDataSize = 480000;
 	
 	/* Perturbation field */
 	static const int pfNPoints = 257;	/* Number of points in the perturbation field */
@@ -173,11 +173,11 @@ private:
 	static const int maxNClampFrames = 2048; /* Number of frames a clamp can persist */
 
 	/* Waveform player */
-	static const int maxPBSize = 230400;			/* Maximum length (samples) for waveform playback */
+	static const int maxPBSize = 480000;			/* Maximum length (samples) for waveform playback */
 
 	/* Tone sequence player */
 	static const int maxNTones = 64;			/* Maximum number of tones in the sequence */
-	static const int maxToneSeqRecLen = 230400;	/* Maximum length (samples) of the tone sequence waveform */
+	static const int maxToneSeqRecLen = 480000;	/* Maximum length (samples) of the tone sequence waveform */
 
 	/* Global delay */
 	static const int maxDelayFrames = 600;	/* Maximum global delay (in frames) */
