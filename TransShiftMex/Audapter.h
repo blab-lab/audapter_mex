@@ -387,6 +387,9 @@ private:
 
 		dtype fb4GainDB;				// gain (in dB) of the speech-modulated noise under fb mode 4
 		dtype fb4Gain;					// gain (scaling factor) of the speech-modulated noise under fb mode 4
+		dtype fb5Gain_speechDB;			// gain (in dB) of the pre-loaded audio file under fb mode 5
+		dtype fb5Gain_speech;			// gain (scaling factor) of the pre-loaded audio file under fb mode 5
+		dtype fb5Gain_noise;			// gain (scaling factor) of the speech-modulated noise under fb mode 5
 
 		dtype dPreemp;					// preemphasis factor
 		dtype dScale;					// scaling the output (when upsampling) (does not affect internal signal
