@@ -128,7 +128,7 @@ Audapter::Audapter() :
 	params.addBoolParam("btimedomainshift", "Perform time-domain pitch shifting, by tracking pitch in real-time, using cepstral method");
 	params.addBoolParam("bratioshift", "Switch for ratio-based formant shifting");
 	params.addBoolParam("bmelshift", "Switch for formant shifting based on the mel frequency scale");
-	params.addBoolParam("bgainadapt", "Formant perturbation gain adaptation switch");
+ params.addBoolParam("bgainadapt", "Formant perturbation gain adaptation switch");
 	params.addBoolParam("brmsclip", "Switch for auto RMS intensity clipping (loudness protection)");	//
 	params.addBoolParam("bbypassfmt", "Switch for bypassing formant tracking (for use in pitch shifting and time warping");
 	params.addBoolParam("bshift2d", "Switch for using F1 and F2 for formant perturbation, instead of just F2");	
@@ -197,8 +197,8 @@ Audapter::Audapter() :
 	params.addDoubleParam("fb2gain", "Noise gain factor for noise only mode");
 	params.addDoubleParam("fb3gain", "Noise gain factor for speech+noise feedback mode");
     params.addDoubleParam("fb4gaindb", "Speech-modulated noise feedback: intensity gain factor");
-	params.addDoubleParam("fb5gain_speechdb", "Feedback mode 5: intensity gain factor for pre-loaded audio file");
-	params.addDoubleParam("fb5gain_noise", "Feedback mode 5: gain for speech-modulated noise");
+	params.addDoubleParam("fb5gain_speech", "Feedback mode 5: gain for speech-modulated noise component");
+	params.addDoubleParam("fb5gain_noise", "Feedback mode 5: gain for constant noise component");
 
 	/* Double array parameters */
     params.addDoubleArrayParam("pitchshiftratio", "Pitch-shifting: ratio (1.0 = no shift)");
@@ -289,12 +289,11 @@ Audapter::Audapter() :
 
 	p.fb3Gain			= 0.0;
 
-  p.fb2Gain			= 1.0;
+	p.fb2Gain			= 1.0;
 
-	// fb5 defaults: speech file gain and speech-modulated noise gain
-  p.fb5Gain_speechDB = 1.0;	// Gain (in dB) of the pre-loaded audio file under feedback mode 5
-  p.fb5Gain_speech = pow(10.0, p.fb5Gain_speechDB / 20); // Default to 1.0 (0 dB) gain for the pre-loaded audio file under feedback mode 5
-  p.fb5Gain_noise = 1.0; // Gain (scaling factor) of the speech-modulated noise under feedback mode 5. Default to 1.0, which means the speech-modulated noise will have the same gain as the original signal.
+	// feedback mode 5 parameters: gains for playback and noise
+	p.fb5gain_speech = 1.0; // Gain multiplier for speech-modulated noise component
+	p.fb5gain_noise = 1.0;  // Gain multiplier for constant noise component
 
 	p.dPreemp			= 0.98;	// preemphasis factor
 	p.dScale			= 1.0;	// scaling the output (when upsampling) (does not affect internal signal
@@ -1136,11 +1135,11 @@ void *Audapter::setGetParam(bool bSet,
     else if (ns == string("fb4gaindb")) {
 		ptr = (void *)&p.fb4GainDB;
 	}
-	else if (ns == string("fb5gain_speechdb")) {
-		ptr = (void*)&p.fb5Gain_speechDB;
+	else if (ns == string("fb5gain_speech")) {
+		ptr = (void *)&p.fb5gain_speech;
 	}
 	else if (ns == string("fb5gain_noise")) {
-		ptr = (void *)&p.fb5Gain_noise;
+		ptr = (void *)&p.fb5gain_noise;
 	}
 	else if (ns == string("fb3gain")) {
 		ptr = (void *)&p.fb3Gain;
@@ -1330,10 +1329,7 @@ void *Audapter::setGetParam(bool bSet,
 			}
 		} else if (ns == string("fb4gaindb")) {
 			p.fb4Gain		= pow(10.0, p.fb4GainDB / 20);
-        } else if (ns == string("fb5gain_speechdb")) {
-			/* Update linear gain when dB parameter is set */
-			p.fb5Gain_speech = pow(10.0, p.fb5Gain_speechDB / 20.0);
-		} else if (ns == string("preemp")) {
+        } else if (ns == string("preemp")) {
 			initializePreEmpFilter();
 		}
 
@@ -2196,8 +2192,8 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 			else if (p.fb == 4)	// Speech-modulated noise	
 				outFrameBufSum[n + p.pvocFrameLen - p.frameLen] = data_pb[pbCounter] * rms_fb * p.fb4Gain * p.dScale;
             else if (p.fb == 5) { // Mode 5: pre-loaded audio + speech-modulated noise
-				dtype noise_part = data_pb[pbCounter] * p.fb5Gain_noise;
-				dtype speech_part = data_pb[pbCounter] * rms_fb * p.fb5Gain_speech * p.dScale;
+				dtype noise_part = data_pb[pbCounter] * p.fb5gain_noise;
+				dtype speech_part = data_pb[pbCounter] * rms_fb * p.fb5gain_speech * p.dScale;
 				// For fb==5 we do not want to include the live speech buffer (outFrameBufSum)
 				// in the output. Instead override the output for this frame with the
 				// pre-loaded playback plus the speech-modulated noise.
@@ -3080,7 +3076,7 @@ int Audapter::gainPerturb(dtype *buffer,dtype *gtot_ptr,int framelen, int frames
 				updated++; // number of times gain has been updated (should be equal to nwin)
 			}
 
-		
+	
 		}
 		lastSample=buffer[framelen-1]; //store last sample for next function call
 		buffer[framelen-1]=gain * buffer[framelen-1];//last sample
