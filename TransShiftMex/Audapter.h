@@ -387,8 +387,9 @@ private:
 
 		dtype fb4GainDB;				// gain (in dB) of the speech-modulated noise under fb mode 4
 		dtype fb4Gain;					// gain (scaling factor) of the speech-modulated noise under fb mode 4
-		dtype fb5gain_speech;			// gain multiplier for speech-modulated noise component
-		dtype fb5gain_noise;			// gain multiplier for constant noise component
+		dtype fb5GainDB_speech;			// gain (in dB) for datapb audio signal, modulated by amplitude of microphone input, under fb mode 5. Set directly in MATLAB.
+		dtype fb5Gain_speech;			// gain (linear scaling factor) conversion of fb5GainDB_speech. Not set in MATLAB.
+		dtype fb5Gain_playback;			// gain (linear scaling factor) for datapb audio signal which is modulated by amplitude of microphone input, under fb mode 5
 
 		dtype dPreemp;					// preemphasis factor
 		dtype dScale;					// scaling the output (when upsampling) (does not affect internal signal

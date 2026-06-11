@@ -128,7 +128,7 @@ Audapter::Audapter() :
 	params.addBoolParam("btimedomainshift", "Perform time-domain pitch shifting, by tracking pitch in real-time, using cepstral method");
 	params.addBoolParam("bratioshift", "Switch for ratio-based formant shifting");
 	params.addBoolParam("bmelshift", "Switch for formant shifting based on the mel frequency scale");
- params.addBoolParam("bgainadapt", "Formant perturbation gain adaptation switch");
+	params.addBoolParam("bgainadapt", "Formant perturbation gain adaptation switch");
 	params.addBoolParam("brmsclip", "Switch for auto RMS intensity clipping (loudness protection)");	//
 	params.addBoolParam("bbypassfmt", "Switch for bypassing formant tracking (for use in pitch shifting and time warping");
 	params.addBoolParam("bshift2d", "Switch for using F1 and F2 for formant perturbation, instead of just F2");	
@@ -197,8 +197,8 @@ Audapter::Audapter() :
 	params.addDoubleParam("fb2gain", "Noise gain factor for noise only mode");
 	params.addDoubleParam("fb3gain", "Noise gain factor for speech+noise feedback mode");
     params.addDoubleParam("fb4gaindb", "Speech-modulated noise feedback: intensity gain factor");
-	params.addDoubleParam("fb5gain_speech", "Feedback mode 5: gain for speech-modulated noise component");
-	params.addDoubleParam("fb5gain_noise", "Feedback mode 5: gain for constant noise component");
+	params.addDoubleParam("fb5gaindb_speech", "Feedback mode 5: gain (in dB) for speech-modulated component");
+	params.addDoubleParam("fb5gain_playback", "Feedback mode 5: gain (linear scaling factor) for constant component");
 
 	/* Double array parameters */
     params.addDoubleArrayParam("pitchshiftratio", "Pitch-shifting: ratio (1.0 = no shift)");
@@ -292,8 +292,9 @@ Audapter::Audapter() :
 	p.fb2Gain			= 1.0;
 
 	// feedback mode 5 parameters: gains for playback and noise
-	p.fb5gain_speech = 1.0; // Gain multiplier for speech-modulated noise component
-	p.fb5gain_noise = 1.0;  // Gain multiplier for constant noise component
+	p.fb5GainDB_speech	= 0.0;		// Gain multiplier (in dB) for speech-modulated component
+	p.fb5Gain_speech	= pow(10.0, p.fb5GainDB_speech / 20); // convert to linear scaling factor
+	p.fb5Gain_playback	= 1.0;		// Gain multiplier (linear scaling factor) for constant playback component
 
 	p.dPreemp			= 0.98;	// preemphasis factor
 	p.dScale			= 1.0;	// scaling the output (when upsampling) (does not affect internal signal
@@ -1135,11 +1136,11 @@ void *Audapter::setGetParam(bool bSet,
     else if (ns == string("fb4gaindb")) {
 		ptr = (void *)&p.fb4GainDB;
 	}
-	else if (ns == string("fb5gain_speech")) {
-		ptr = (void *)&p.fb5gain_speech;
+	else if (ns == string("fb5gaindb_speech")) {
+		ptr = (void *)&p.fb5GainDB_speech;
 	}
-	else if (ns == string("fb5gain_noise")) {
-		ptr = (void *)&p.fb5gain_noise;
+	else if (ns == string("fb5gain_playback")) {
+		ptr = (void *)&p.fb5Gain_playback;
 	}
 	else if (ns == string("fb3gain")) {
 		ptr = (void *)&p.fb3Gain;
@@ -1328,7 +1329,9 @@ void *Audapter::setGetParam(bool bSet,
 				tsgToneOnsets[n] = tsgToneOnsets[n - 1] + p.tsgInt[n-1];	//sec
 			}
 		} else if (ns == string("fb4gaindb")) {
-			p.fb4Gain		= pow(10.0, p.fb4GainDB / 20);
+			p.fb4Gain			= pow(10.0, p.fb4GainDB / 20);
+		} else if (ns == string("fb5gaindb_speech")) {
+			p.fb5Gain_speech	= pow(10.0, p.fb5GainDB_speech / 20);
         } else if (ns == string("preemp")) {
 			initializePreEmpFilter();
 		}
@@ -2191,13 +2194,10 @@ int Audapter::handleBuffer(dtype *inFrame_ptr, dtype *outFrame_ptr, int frame_si
 				outFrameBufSum[n + p.pvocFrameLen - p.frameLen] = outFrameBufSum[n + p.pvocFrameLen - p.frameLen] + data_pb[pbCounter] * p.fb3Gain;
 			else if (p.fb == 4)	// Speech-modulated noise	
 				outFrameBufSum[n + p.pvocFrameLen - p.frameLen] = data_pb[pbCounter] * rms_fb * p.fb4Gain * p.dScale;
-            else if (p.fb == 5) { // Mode 5: pre-loaded audio + speech-modulated noise
-				dtype noise_part = data_pb[pbCounter] * p.fb5gain_noise;
-				dtype speech_part = data_pb[pbCounter] * rms_fb * p.fb5gain_speech * p.dScale;
-				// For fb==5 we do not want to include the live speech buffer (outFrameBufSum)
-				// in the output. Instead override the output for this frame with the
-				// pre-loaded playback plus the speech-modulated noise.
-				outFrameBufSum[n + p.pvocFrameLen - p.frameLen] = speech_part + noise_part;
+            else if (p.fb == 5) { // Mode 5: constant amplitude playback + speech-modulated playback
+				dtype playback_component = data_pb[pbCounter] * p.fb5Gain_playback;
+				dtype speech_modulated_component = data_pb[pbCounter] * rms_fb * p.fb5Gain_speech * p.dScale;
+				outFrameBufSum[n + p.pvocFrameLen - p.frameLen] = speech_modulated_component + playback_component;
 			}
 			pbCounter += p.downFact;
 			if (pbCounter >= maxPBSize)
