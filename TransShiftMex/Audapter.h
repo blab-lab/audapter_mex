@@ -367,7 +367,7 @@ private:
 		int	   pvocHop;					// step size of analysis window (must be multiples of frameLen)
 
 		int    avgLen;				// length of smoothing ( should be approx one pitch period, 
-		// can be greater /shorter if you want more / lesss moothing)
+		// can be greater /shorter if you want more / less smoothing)
 		// avgLen = 1 ---> no smoothing ( i.e. smoothing over one value)
 
 		int		downFact;				// Down-sampling factor (Default: downSampFact_default)

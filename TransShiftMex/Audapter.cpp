@@ -269,7 +269,7 @@ Audapter::Audapter() :
 	p.anaLen			= p.frameShift+2*(p.nDelay-1)*p.frameLen;// size of lpc analysis (symmetric around window to be processed)
 	p.pvocFrameLen      = p.frameShift + (2 * p.nDelay - 3) * p.frameLen;// For frequency/pitch shifting: size of lpc analysis (symmetric around window to be processed)
 	p.avgLen            = 10;				    // length of smoothing ( should be approx one pitch period, 
-	// can be greater /shorter if you want more / lesss smoothing)
+	// can be greater /shorter if you want more / less smoothing)
 	// avgLen = 1 ---> no smoothing ( i.e. smoothing over one value)
 
 	// RMS
@@ -297,10 +297,10 @@ Audapter::Audapter() :
 	p.fb5Gain_playback	= 1.0;		// Gain multiplier (linear scaling factor) for constant playback component
 
 	p.dPreemp			= 0.98;	// preemphasis factor
-	p.dScale			= 1.0;	// scaling the output (when upsampling) (does not affect internal signal
+	p.dScale			= 1.0;	// scaling the output (when upsampling) (does not affect internal signal)
 
 	// for transition detection
-	p.dFmtsFF			= 0;	// formant forgeeting factor for s
+	p.dFmtsFF			= 0;	// formant forgetting factor for s
 	p.maxDelta			= 40;	// maximal allowed formant derivative 		
 	p.fmtDetectStart[0] = 800;	// formant frequencies at start of transition (goal region),i.e. [a]
 	p.fmtDetectStart[1] = 1600;	// formant frequencies at start of transition (goal region),i.e. [a]		
