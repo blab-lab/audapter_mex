@@ -14,8 +14,8 @@ This is the MEX core of the MATLAB package. Clone this whole repository if you w
 2. Download the accompanying repository for MATLAB files from [blab-lab/audapter_matlab](https://github.com/blab-lab/audapter_matlab) and add it to your MATLAB path. You must use the blab-lab fork of audapter_matlab if you are using the blab-lab fork of audapter_mex.
 For more info on using Audapter, see the Documentation section below.
 
-## Special setup for Audapter versions b2.4 and older (before July 2026)
-If you are intentionally using Audapter version b2.4 or older, you will also need to download and add to your MATLAB path the [blab-lab/commonmcode repository](https://github.com/blab-lab/commonmcode). Then, move the commonmcode folder to the bottom of your MATLAB path. The commonmcode repository is not used at all for Audapter version b2.5 (July 2026) or later.
+## Special setup for Audapter versions b2.4 and older (before August 2026)
+If you are intentionally using Audapter version b2.4 or older, you will also need to download and add to your MATLAB path the [blab-lab/commonmcode repository](https://github.com/blab-lab/commonmcode). Then, move the commonmcode folder to the bottom of your MATLAB path. The commonmcode repository is not used at all for Audapter version b2.5 (August 2026) or later.
 
 ## Audio interfaces and Focusrite drivers
 The Audapter built-in demos (such as `audapterDemo_online.m`) assume you are using a Focusrite device. If you are using a different device, you will need to edit the command `Audapter('deviceName', ...)`. For MOTU devices, the device name will be 'MOTU MicroBook'. 
